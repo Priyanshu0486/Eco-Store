@@ -1,0 +1,138 @@
+{
+  "tech_stack": [
+    "Java",
+    "Spring Boot",
+    "MySQL",
+    "JPA/Hibernate",
+    "Spring Security",
+    "JWT"
+  ],
+  "features": [
+    {
+      "name": "User Authentication API",
+      "description": "Handles user registration and sign-in.",
+      "files": [
+        "src/main/java/com/Ecostore/Backend/controller/AuthController.java",
+        "src/main/java/com/Ecostore/Backend/service/UserService.java"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "info": {
+          "title": "User Authentication API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/api/auth/signup": {
+            "post": {
+              "summary": "Register a new user",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "username": {"type": "string"},
+                        "email": {"type": "string"},
+                        "password": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {"description": "User registered successfully"},
+                "400": {"description": "Username or email already taken"}
+              }
+            }
+          },
+          "/api/auth/signin": {
+            "post": {
+              "summary": "Authenticate a user and get a JWT token",
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "username": {"type": "string"},
+                        "password": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {"description": "Authentication successful, JWT token returned"},
+                "401": {"description": "Invalid credentials"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Shopping Cart API",
+      "description": "Manages the user's shopping cart.",
+      "files": [
+        "src/main/java/com/Ecostore/Backend/controller/CartController.java",
+        "src/main/java/com/Ecostore/Backend/service/CartService.java"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "info": {
+          "title": "Shopping Cart API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/api/cart/": {
+            "get": {
+              "summary": "Get the authenticated user's cart",
+              "security": [{"bearerAuth": []}],
+              "responses": {
+                "200": {"description": "User's cart details"},
+                "401": {"description": "Unauthorized"},
+                "404": {"description": "User or cart not found"}
+              }
+            }
+          },
+          "/api/cart/add": {
+            "put": {
+              "summary": "Add an item to the cart",
+              "security": [{"bearerAuth": []}],
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "productId": {"type": "integer", "format": "int64"},
+                        "quantity": {"type": "integer"}
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {"description": "Item added successfully"},
+                "401": {"description": "Unauthorized"},
+                "404": {"description": "Product not found"}
+              }
+            }
+          }
+        },
+        "components": {
+          "securitySchemes": {
+            "bearerAuth": {
+              "type": "http",
+              "scheme": "bearer",
+              "bearerFormat": "JWT"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

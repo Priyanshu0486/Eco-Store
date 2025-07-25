@@ -5,6 +5,7 @@ import com.Ecostore.Backend.dto.SignUpRequest;
 import com.Ecostore.Backend.model.Role;
 import com.Ecostore.Backend.model.User;
 import com.Ecostore.Backend.repository.UserRepository;
+import com.Ecostore.Backend.util.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,9 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtUtils jwtUtils;
 
     public User createUser(SignUpRequest signUpRequest) {
         User user = new User();
@@ -39,6 +43,17 @@ public class UserService {
         }
 
         return user;
+    }
+
+    public User findUserProfileByJwt(String jwt) {
+        String email = jwtUtils.getUserNameFromJwtToken(jwt.substring(7));
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    public User findUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
     }
 
     public boolean existsByEmail(String email) {
