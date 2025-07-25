@@ -45,4 +45,11 @@ public class CartController {
         cartService.removeItemFromCart(user.getId(), req);
         return new ResponseEntity<>(new ApiResponse(true, "Item removed successfully"), HttpStatus.OK);
     }
+
+    @DeleteMapping("/clear")
+    public ResponseEntity<ApiResponse> clearCart(@RequestHeader("Authorization") String jwt) throws Exception {
+        User user = userService.findUserProfileByJwt(jwt);
+        cartService.clearCart(user.getId());
+        return new ResponseEntity<>(new ApiResponse(true, "Cart cleared successfully"), HttpStatus.OK);
+    }
 }

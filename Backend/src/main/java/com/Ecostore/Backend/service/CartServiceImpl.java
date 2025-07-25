@@ -65,6 +65,18 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    public void clearCart(Long userId) throws Exception {
+        Cart cart = cartRepository.findByUserId(userId);
+        if (cart == null) {
+            throw new UserException("Cart not found for user " + userId);
+        }
+        if (!cart.getCartItems().isEmpty()) {
+            cart.getCartItems().clear();
+            cartRepository.save(cart);
+        }
+    }
+
+    @Override
     public void removeItemFromCart(Long userId, RemoveItemRequest req) throws Exception {
         Cart cart = cartRepository.findByUserId(userId);
         Product product = productRepository.findById(req.getProductId()).orElseThrow(() -> new ProductException("Product not found"));
