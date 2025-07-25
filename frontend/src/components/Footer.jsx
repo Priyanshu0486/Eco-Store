@@ -64,7 +64,7 @@ function Footer() {
       component="footer" 
       sx={{ 
         bgcolor: 'background.paper',
-        py: 6,
+        py: 2, // Reduced vertical padding
         borderTop: '1px solid',
         borderColor: 'divider'
       }}
@@ -140,7 +140,7 @@ function Footer() {
           ))}
         </Grid>
 
-        <Divider sx={{ my: 4 }} />
+        <Divider sx={{ my: 1 }} />
 
         <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="body2" color="text.secondary">
@@ -163,4 +163,4 @@ function Footer() {
   );
 }
 
-export default Footer; 
+export default Footer;

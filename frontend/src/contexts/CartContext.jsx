@@ -13,8 +13,7 @@ const generateRandomCode = (length = 6) => {
 };
 
 export const CartProvider = ({ children }) => {
-  const { user } = useAuth();
-  const [cart, setCart] = useState({ cartItems: [], totalPrice: 0, totalItems: 0 });
+  const [cart, setCart] = useState([]);
   const [purchasedItems, setPurchasedItems] = useState([]);
   const [ecoCoins, setEcoCoins] = useState(0);
   const [environmentalImpact, setEnvironmentalImpact] = useState({
@@ -27,22 +26,29 @@ export const CartProvider = ({ children }) => {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [redemptionHistory, setRedemptionHistory] = useState([]);
 
-  // Load non-cart data from localStorage on initial render
+  // Load saved data from localStorage on initial render
   useEffect(() => {
+    const savedCart = localStorage.getItem('cart');
     const savedPurchases = localStorage.getItem('purchasedItems');
     const savedImpact = localStorage.getItem('environmentalImpact');
     const savedEcoCoins = localStorage.getItem('ecoCoins');
     const savedCoupons = localStorage.getItem('coupons');
-    const savedRedemptionHistory = localStorage.getItem('redemptionHistory');
 
+    if (savedCart) setCart(JSON.parse(savedCart));
     if (savedPurchases) setPurchasedItems(JSON.parse(savedPurchases));
     if (savedImpact) setEnvironmentalImpact(JSON.parse(savedImpact));
     if (savedEcoCoins) setEcoCoins(JSON.parse(savedEcoCoins));
     if (savedCoupons) setCoupons(JSON.parse(savedCoupons));
+
+    const savedRedemptionHistory = localStorage.getItem('redemptionHistory');
     if (savedRedemptionHistory) setRedemptionHistory(JSON.parse(savedRedemptionHistory));
   }, []);
 
-  // Save non-cart data to localStorage whenever they change
+  // Save data to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
+
   useEffect(() => {
     localStorage.setItem('purchasedItems', JSON.stringify(purchasedItems));
   }, [purchasedItems]);
@@ -63,46 +69,50 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('redemptionHistory', JSON.stringify(redemptionHistory));
   }, [redemptionHistory]);
 
-  // --- Backend-driven Cart Logic ---
-  const fetchCart = async () => {
-    if (!user) return;
-    try {
-      const data = await getCart();
-      setCart(data || { cartItems: [], totalPrice: 0, totalItems: 0 });
-    } catch (error) {
-      console.error("Failed to fetch cart:", error);
-      setCart({ cartItems: [], totalPrice: 0, totalItems: 0 }); // Reset cart on error
+  const addToCart = (product) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === product.id);
+      if (existingItem) {
+        return prevCart.map(item =>
+          item.id === product.id 
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      return [...prevCart, { ...product, quantity: 1 }];
+    });
+  };
+
+  const removeFromCart = (productId) => {
+    setCart(prevCart => prevCart.filter(item => item.id !== productId));
+  };
+
+  const updateQuantity = (productId, newQuantity) => {
+    if (newQuantity < 1) return;
+    
+    setCart(prevCart =>
+      prevCart.map(item =>
+        item.id === productId ? { ...item, quantity: newQuantity } : item
+      )
+    );
+  };
+
+  const increaseQuantity = (productId) => {
+    const item = cart.find((i) => i.id === productId);
+    if (item) {
+      updateQuantity(productId, item.quantity + 1);
     }
   };
 
-  // Fetch cart when user logs in
-  useEffect(() => {
-    if (user) {
-      fetchCart();
-    }
-  }, [user]);
-
-  const addItem = async (item) => {
-    if (!user) return;
-    try {
-      await addItemToCart(item);
-      fetchCart(); // Refresh cart from backend
-    } catch (error) {
-      console.error("Failed to add item to cart:", error);
+  const decreaseQuantity = (productId) => {
+    const item = cart.find((i) => i.id === productId);
+    if (item && item.quantity > 1) {
+      updateQuantity(productId, item.quantity - 1);
+    } else {
+      removeFromCart(productId);
     }
   };
 
-  const removeItem = async (item) => {
-    if (!user) return;
-    try {
-      await removeItemFromCart(item);
-      fetchCart(); // Refresh cart from backend
-    } catch (error) {
-      console.error("Failed to remove item from cart:", error);
-    }
-  };
-
-  // --- Local Logic (to be refactored or kept) ---
   const addToPurchased = (items) => {
     try {
       const purchaseDate = new Date().toISOString();
@@ -148,16 +158,55 @@ export const CartProvider = ({ children }) => {
   };
 
   const clearCart = () => {
-    // This should eventually call a backend endpoint
-    setCart({ cartItems: [], totalPrice: 0, totalItems: 0 });
+    setCart([]);
   };
 
   const checkout = () => {
-    // This will be a more complex backend process
+    const newPurchasedItems = cart.map(item => ({
+      ...item,
+      purchaseDate: new Date().toISOString().split('T')[0],
+      carbonSaved: (item.carbonSaved || 0) * item.quantity,
+      waterReduced: (item.waterReduced || 0) * item.quantity,
+      plasticAvoided: (item.plasticItemsAvoided || 0) * item.quantity
+    }));
+
+    const carbonSaved = cart.reduce((total, item) => total + (item.carbonSaved * item.quantity), 0);
+    const waterReduced = cart.reduce((total, item) => total + (item.waterReduced * item.quantity), 0);
+    const plasticAvoided = cart.reduce((total, item) => total + ((item.plasticItemsAvoided || 0) * item.quantity), 0);
+
+    setEnvironmentalImpact(prev => ({
+      carbonSaved: prev.carbonSaved + carbonSaved,
+      waterReduced: prev.waterReduced + waterReduced,
+      plasticAvoided: prev.plasticAvoided + plasticAvoided
+    }));
+
+    const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    const earnedEcoCoins = cart.reduce((total, item) => {
+      const coinsPerItem = calculateEcoCoins(item.price);
+      return total + coinsPerItem * item.quantity;
+    }, 0);
+    setEcoCoins(prev => prev + earnedEcoCoins);
+
+    if (appliedCoupon && newPurchasedItems.length > 0) {
+      const discountAmount = appliedCoupon.type === 'fixed'
+        ? Math.min(appliedCoupon.discount, subtotal)
+        : (subtotal * appliedCoupon.discount) / 100;
+
+      newPurchasedItems[0].couponDiscount = discountAmount;
+
+      setCoupons(prevCoupons =>
+        prevCoupons.map(c =>
+          c.code === appliedCoupon.code ? { ...c, used: true } : c
+        )
+      );
+      setAppliedCoupon(null);
+    }
+
+    setPurchasedItems(prev => [...prev, ...newPurchasedItems]);
+    setCart([]);
   };
 
   const redeemEcoCoins = (option) => {
-    // This logic remains local for now
     if (ecoCoins >= option.coins) {
       let message = `Successfully redeemed ${option.label}!`;
       setEcoCoins(prev => prev - option.coins);
@@ -202,8 +251,7 @@ export const CartProvider = ({ children }) => {
   };
 
   const applyCoupon = (couponCode) => {
-    // This logic remains local for now
-    const subtotal = cart.totalPrice;
+    const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
     const coupon = coupons.find(c => c.code.toLowerCase() === couponCode.toLowerCase() && !c.used);
 
     if (!coupon) {
@@ -233,14 +281,16 @@ export const CartProvider = ({ children }) => {
         coupons,
         appliedCoupon,
         redemptionHistory,
-        addItem, // new
-        removeItem, // new
-        fetchCart, // new
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        increaseQuantity,
+        decreaseQuantity,
         checkout,
         redeemEcoCoins,
         applyCoupon,
         removeCoupon,
-        cartCount: cart.cartItems ? cart.cartItems.reduce((sum, item) => sum + item.quantity, 0) : 0,
+        cartCount: cart.reduce((sum, item) => sum + item.quantity, 0),
         clearCart,
         addToPurchased
       }}

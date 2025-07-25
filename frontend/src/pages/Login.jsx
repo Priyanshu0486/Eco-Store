@@ -119,122 +119,418 @@ function Login({ setUser }) {
     }
   };
 
-  return (
-    <Container maxWidth="sm" sx={{ py: 8 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" align="center" gutterBottom color="primary">
-          {isLoginView ? 'Login to EcoStore' : 'Create an Account'}
-        </Typography>
-        <Typography variant="body1" align="center" paragraph color="text.secondary">
-          {isLoginView ? 'Access your eco-shopping dashboard and rewards' : 'Join us in making sustainable shopping accessible'}
-        </Typography>
+  const handleForgotPassword = async () => {
+    if (!email) {
+      return handleResponse('Please enter your email address to reset your password.', true);
+    }
+    try {
+      // This is where you would call your backend API to send a password reset link.
+      // For now, we'll simulate a success message.
+            console.log(`Password reset requested for email: ${email}`);
+      handleResponse('If an account with that email exists, a password reset link has been sent.', false);
+    } catch (apiError) {
+      const errorMessage = apiError.response?.data?.message || 'Password reset failed. Please try again later.';
+      handleResponse(errorMessage, true);
+    }
+  };
 
-        <Box component="form" onSubmit={isLoginView ? handleLogin : handleSignup} sx={{ mt: 2 }}>
-          {!isLoginView && (
-            <TextField
-              label="Username"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          )}
-          <TextField
-            label="Email"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <TextField
-            label="Password"
-            autoComplete="current-password"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          {!isLoginView && (
-            <>
+  return (
+    <Box 
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundImage: 'url("https://www.transparenttextures.com/patterns/cubes.png")',
+        perspective: '1000px', // Added for 3D effect
+      }}
+    >
+      <Container maxWidth="xs" sx={{ py: 4, display: 'flex', alignItems: 'center' }}>
+        <Paper 
+          elevation={10} 
+          sx={{ 
+            width: '100%',
+            
+            transition: 'transform 0.8s, height 0.9s',
+            transformStyle: 'preserve-3d',
+            position: 'relative',
+            height: isLoginView ? '600px' : '830px', // Adjust height based on content
+            transform: isLoginView ? 'rotateY(0deg)' : 'rotateY(180deg)',
+          }}
+        >
+          {/* Login Form (Front of the card) */}
+          <Box
+            sx={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              backfaceVisibility: 'hidden',
+              p: 4,
+              boxSizing: 'border-box',
+              borderRadius: 4,
+              background: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}
+          >
+            <Box sx={{ textAlign: 'center', mb: 3 }}>
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  color: '#2c3e50',
+                  fontFamily: '"Trebuchet MS", sans-serif',
+                  letterSpacing: '1px',
+                  mb: 1
+                }}
+              >
+                ECOSTORE
+              </Typography>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  color: '#34495e',
+                  mb: 2
+                }}
+              >
+                Time to go green. Welcome!
+              </Typography>
+            </Box>
+
+            <Box component="form" onSubmit={handleLogin} sx={{ mt: 2 }}>
+              <TextField
+                label="Email"
+                autoComplete="email"
+                variant="outlined"
+                fullWidth
+                margin="dense"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  '& .MuiInputLabel-root': { position: 'relative', transform: 'none', color: '#000', fontWeight: 'bold', fontSize: '1rem', mb: -1 },
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '25px',
+                    backgroundColor: '#fff',
+                    '& fieldset': { borderColor: '#000' },
+                    '&:hover fieldset': { borderColor: '#000' },
+                    '&.Mui-focused fieldset': { borderColor: '#000' },
+                  }
+                }}
+              />
+              <TextField
+                label="Password"
+                autoComplete="current-password"
+                variant="outlined"
+                fullWidth
+                margin="dense"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  '& .MuiInputLabel-root': { position: 'relative', transform: 'none', color: '#000', fontWeight: 'bold', fontSize: '1rem', mb: -1 },
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '25px',
+                    backgroundColor: '#fff',
+                    '& fieldset': { borderColor: '#000' },
+                    '&:hover fieldset': { borderColor: '#000' },
+                    '&.Mui-focused fieldset': { borderColor: '#000' },
+                  }
+                }}
+              />
+              <Button
+                variant="contained" 
+                fullWidth 
+                sx={{ 
+                  mt: 2, 
+                  py: 1.5,
+                  borderRadius: '25px',
+                  backgroundColor: '#006400',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  fontSize: '1rem',
+                  '&:hover': {
+                    backgroundColor: '#005000',
+                    boxShadow: '0px 8px 25px rgba(0, 0, 0, 0.2)',
+                  },
+                }}
+                type="submit"
+              >
+                Log In
+              </Button>
+              <Typography 
+                variant="body2" 
+                align="center" 
+                sx={{ 
+                  mt: 2, 
+                  cursor: 'pointer',
+                  color: '#3498db',
+                  fontWeight: 'bold',
+                  '&:hover': {
+                    textDecoration: 'underline',
+                    color: '#2980b9',
+                  },
+                }} 
+                onClick={handleForgotPassword}
+              >
+                Forgot Password?
+              </Typography>
+              <Button 
+                variant="text" 
+                fullWidth 
+                onClick={handleAdminLogin}
+                sx={{ 
+                  mt: 1.5,
+                  color: '#3498db',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  borderRadius: '25px',
+                  '&:hover': {
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                  },
+                }}
+              >
+                Login as Admin (Demo)
+              </Button>
+              <Button 
+                variant="text" 
+                fullWidth 
+                onClick={() => setIsLoginView(false)}
+                sx={{ 
+                  mt: 2, 
+                  color: '#3498db',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  borderRadius: '25px',
+                  '&:hover': {
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                  },
+                }} 
+              >
+                Don't have an account? Sign Up
+              </Button>
+            </Box>
+          </Box>
+
+          {/* Signup Form (Back of the card) */}
+          <Box
+            sx={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              backfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)',
+              p: 4,
+              boxSizing: 'border-box',
+              borderRadius: 4,
+              background: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}
+          >
+            <Box sx={{ textAlign: 'center', mb: 3 }}>
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  color: '#2c3e50',
+                  fontFamily: '"Trebuchet MS", sans-serif',
+                  letterSpacing: '1px',
+                  mb: 1
+                }}
+              >
+                Create an Account
+              </Typography>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  color: '#34495e',
+                  mb: 2
+                }}
+              >
+                Ready to make a difference? Sign up in seconds.
+              </Typography>
+            </Box>
+
+            <Box component="form" onSubmit={handleSignup} sx={{ mt: 2 }}>
+              <TextField
+                label="Username"
+                variant="outlined"
+                fullWidth
+                margin="dense"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  '& .MuiInputLabel-root': { position: 'relative', transform: 'none', color: '#000', fontWeight: 'bold', fontSize: '1rem', mb: -1 },
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '25px',
+                    backgroundColor: '#fff',
+                    '& fieldset': { borderColor: '#000' },
+                    '&:hover fieldset': { borderColor: '#000' },
+                    '&.Mui-focused fieldset': { borderColor: '#000' },
+                  }
+                }}
+              />
+              <TextField
+                label="Email"
+                autoComplete="email"
+                variant="outlined"
+                fullWidth
+                margin="dense"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  '& .MuiInputLabel-root': { position: 'relative', transform: 'none', color: '#000', fontWeight: 'bold', fontSize: '1rem', mb: -1 },
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '25px',
+                    backgroundColor: '#fff',
+                    '& fieldset': { borderColor: '#000' },
+                    '&:hover fieldset': { borderColor: '#000' },
+                    '&.Mui-focused fieldset': { borderColor: '#000' },
+                  }
+                }}
+              />
+              <TextField
+                label="Password"
+                autoComplete="current-password"
+                variant="outlined"
+                fullWidth
+                margin="dense"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  '& .MuiInputLabel-root': { position: 'relative', transform: 'none', color: '#000', fontWeight: 'bold', fontSize: '1rem', mb: -1 },
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '25px',
+                    backgroundColor: '#fff',
+                    '& fieldset': { borderColor: '#000' },
+                    '&:hover fieldset': { borderColor: '#000' },
+                    '&.Mui-focused fieldset': { borderColor: '#000' },
+                  }
+                }}
+              />
               <TextField
                 label="Age"
                 variant="outlined"
                 fullWidth
-                margin="normal"
+                margin="dense"
                 type="number"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  '& .MuiInputLabel-root': { position: 'relative', transform: 'none', color: '#000', fontWeight: 'bold', fontSize: '1rem', mb: -1 },
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '25px',
+                    backgroundColor: '#fff',
+                    '& fieldset': { borderColor: '#000' },
+                    '&:hover fieldset': { borderColor: '#000' },
+                    '&.Mui-focused fieldset': { borderColor: '#000' },
+                  }
+                }}
               />
               <TextField
                 label="Phone Number"
                 variant="outlined"
                 fullWidth
-                margin="normal"
+                margin="dense"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  '& .MuiInputLabel-root': { position: 'relative', transform: 'none', color: '#000', fontWeight: 'bold', fontSize: '1rem', mb: -1 },
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '25px',
+                    backgroundColor: '#fff',
+                    '& fieldset': { borderColor: '#000' },
+                    '&:hover fieldset': { borderColor: '#000' },
+                    '&.Mui-focused fieldset': { borderColor: '#000' },
+                  }
+                }}
               />
               <TextField
                 label="Date of Birth"
                 variant="outlined"
                 fullWidth
-                margin="normal"
+                margin="dense"
                 type="date"
                 value={dateOfBirth}
                 onChange={(e) => setDateOfBirth(e.target.value)}
-                InputLabelProps={{
-                  shrink: true,
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  '& .MuiInputLabel-root': { position: 'relative', transform: 'none', color: '#000', fontWeight: 'bold', fontSize: '1rem', mb: -1 },
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '25px',
+                    backgroundColor: '#fff',
+                    '& fieldset': { borderColor: '#000' },
+                    '&:hover fieldset': { borderColor: '#000' },
+                    '&.Mui-focused fieldset': { borderColor: '#000' },
+                  }
                 }}
               />
-            </>
-          )}
-
-          <Button
-            type="submit"
-            variant="contained"
-            color="success"
-            fullWidth
-            sx={{ mt: 2, py: 1.5 }}
-          >
-            {isLoginView ? 'Log In' : 'Sign Up'}
-          </Button>
-          {isLoginView && (
-            <Button 
-              variant="text" 
-              fullWidth 
-              onClick={handleAdminLogin}
-              sx={{ mt: 1.5 }}
-            >
-              Login as Admin (Demo)
-            </Button>
-          )}
-
-          <Typography variant="body2" align="center" sx={{ mt: 2, cursor: 'pointer' }} onClick={() => setIsLoginView(!isLoginView)}>
-            {isLoginView ? "Don't have an account? Sign Up" : 'Already have an account? Log In'}
-          </Typography>
-        </Box>
-      </Paper>
-
+              <Button
+                variant="contained" 
+                fullWidth 
+                sx={{ 
+                  mt: 2, 
+                  py: 1.5,
+                  borderRadius: '25px',
+                  backgroundColor: '#006400',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  fontSize: '1rem',
+                  '&:hover': {
+                    backgroundColor: '#005000',
+                    boxShadow: '0px 8px 25px rgba(0, 0, 0, 0.2)',
+                  },
+                }}
+                type="submit"
+              >
+                Sign Up
+              </Button>
+              <Button 
+                variant="text" 
+                fullWidth 
+                onClick={() => setIsLoginView(true)}
+                sx={{ 
+                  mt: 2, 
+                  color: '#3498db',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  borderRadius: '25px',
+                  '&:hover': {
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                  },
+                }} 
+              >
+                Already have an account? Log In
+              </Button>
+            </Box>
+          </Box>
+        </Paper>
+      </Container>
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
         onClose={() => setSnackbarOpen(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert
-          onClose={() => setSnackbarOpen(false)}
-          severity={error ? 'error' : 'success'}
-          elevation={6}
-          variant="filled"
-        >
+        <Alert onClose={() => setSnackbarOpen(false)} severity={error ? 'error' : 'success'} sx={{ width: '100%' }}>
           {error || success}
         </Alert>
       </Snackbar>
-    </Container>
+    </Box>
   );
 }
 
-export default Login; 
+export default Login;
