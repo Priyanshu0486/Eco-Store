@@ -16,5 +16,7 @@ public interface CartService {
 
     public void clearCart(Long userId) throws Exception;
 
+    public void removeCartItemById(Long userId, Long cartItemId) throws Exception;
+
     public Cart findUserCart(Long userId) throws UserException;
 }
