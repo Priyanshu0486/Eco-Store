@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({UserException.class, ProductException.class, CartItemException.class})
+    @ExceptionHandler({UserException.class, ProductException.class})
     public ResponseEntity<ApiResponse> handleCustomExceptions(Exception e) {
         ApiResponse response = new ApiResponse(false, e.getMessage());
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);

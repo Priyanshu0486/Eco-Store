@@ -31,8 +31,6 @@ function AdminDashboard() {
     category: '',
     imageUrl: '',
     carbonSaved: '',
-    waterReduced: '',
-    plasticItemsAvoided: '',
     quantity: ''
   });
 
@@ -93,7 +91,7 @@ function AdminDashboard() {
     setIsEditing(false);
     setCurrentProduct({
       name: '', description: '', price: '', category: '', imageUrl: '',
-      carbonSaved: '', waterReduced: '', plasticItemsAvoided: '', quantity: ''
+      carbonSaved: '', quantity: ''
     });
   };
 
@@ -160,8 +158,8 @@ function AdminDashboard() {
               <TextField margin="normal" required fullWidth label="Quantity" name="quantity" type="number" value={currentProduct.quantity} onChange={handleInputChange} />
               <TextField margin="normal" fullWidth label="Image URL" name="imageUrl" value={currentProduct.imageUrl} onChange={handleInputChange} />
               <TextField margin="normal" fullWidth label="Carbon Saved (kg)" name="carbonSaved" type="number" value={currentProduct.carbonSaved} onChange={handleInputChange} />
-              <TextField margin="normal" fullWidth label="Water Reduced (L)" name="waterReduced" type="number" value={currentProduct.waterReduced} onChange={handleInputChange} />
-              <TextField margin="normal" fullWidth label="Plastic Items Avoided" name="plasticItemsAvoided" type="number" value={currentProduct.plasticItemsAvoided} onChange={handleInputChange} />
+              
+              
               <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>{isEditing ? 'Update Product' : 'Add Product'}</Button>
               {isEditing && <Button fullWidth onClick={resetForm}>Cancel Edit</Button>}
             </Box>
