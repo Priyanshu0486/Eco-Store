@@ -1,9 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Box, Container, Grid, Paper, Typography, TextField, Button, 
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton,
-  FormControl, InputLabel, Select, MenuItem
+  Container, 
+  Typography, 
+  Box, 
+  Grid, 
+  Paper, 
+  TextField, 
+  Button as MuiButton,
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow, 
+  IconButton,
+  FormControl, 
+  InputLabel, 
+  Select, 
+  MenuItem
 } from '@mui/material';
+import Button from '@mui/material/Button';
+import { useNavigate } from 'react-router-dom';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { 
   adminGetProducts, 
@@ -14,7 +31,7 @@ import {
 
 const categories = [
   'Home',
-  'Personal Care',
+  'Beauty',
   'Fashion',
   'Electronics',
   'Kitchen',
@@ -22,6 +39,7 @@ const categories = [
 ];
 
 function AdminDashboard() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [currentProduct, setCurrentProduct] = useState({
@@ -126,7 +144,28 @@ function AdminDashboard() {
           <StatCard title="Total Products" value={products.length} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Pending Orders" value="0" />
+          <StatCard title="Total Orders" value="0" />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Button
+            variant="outlined"
+            fullWidth
+            sx={{
+              height: '100%',
+              textTransform: 'none',
+              py: 2,
+              fontSize: '18px',
+              backgroundColor: 'rgb(85, 180, 66)',
+              color: 'white',
+              fontWeight: 'bold',
+              '&:hover': {
+                backgroundColor: 'rgb(32, 124, 13)', 
+              },
+            }}
+            onClick={() => navigate('/admin/orders')}
+          >
+            Manage Orders
+          </Button>
         </Grid>
       </Grid>
 
@@ -160,10 +199,8 @@ function AdminDashboard() {
               <TextField margin="normal" required fullWidth label="Quantity" name="quantity" type="number" value={currentProduct.quantity} onChange={handleInputChange} />
               <TextField margin="normal" fullWidth label="Image URL" name="imageUrl" value={currentProduct.imageUrl} onChange={handleInputChange} />
               <TextField margin="normal" fullWidth label="Carbon Saved (kg)" name="carbonSaved" type="number" value={currentProduct.carbonSaved} onChange={handleInputChange} />
-              <TextField margin="normal" fullWidth label="Water Reduced (L)" name="waterReduced" type="number" value={currentProduct.waterReduced} onChange={handleInputChange} />
-              <TextField margin="normal" fullWidth label="Plastic Items Avoided" name="plasticItemsAvoided" type="number" value={currentProduct.plasticItemsAvoided} onChange={handleInputChange} />
-              <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>{isEditing ? 'Update Product' : 'Add Product'}</Button>
-              {isEditing && <Button fullWidth onClick={resetForm}>Cancel Edit</Button>}
+              <MuiButton type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>{isEditing ? 'Update Product' : 'Add Product'}</MuiButton>
+              {isEditing && <MuiButton fullWidth onClick={resetForm}>Cancel Edit</MuiButton>}
             </Box>
           </Paper>
         </Grid>

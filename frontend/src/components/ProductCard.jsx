@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Card, 
@@ -9,7 +9,8 @@ import {
   Box, 
   Chip, 
   Snackbar,
-  Alert
+  Alert,
+  Rating
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
@@ -21,6 +22,32 @@ function ProductCard({ product }) {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const { addToCart } = useCart();
   const ecoCoinsToEarn = calculateEcoCoins(product.price);
+
+  // Rating state loaded from localStorage or product props
+  const [ratingData, setRatingData] = useState(() => {
+    const stored = JSON.parse(localStorage.getItem('productRatings') || '{}');
+    return stored[product.id] || { rating: product.rating || 0, numRatings: product.numRatings || 0 };
+  });
+
+  // Track the rating given by the current user
+  const [userRating, setUserRating] = useState(() => {
+    const stored = JSON.parse(localStorage.getItem('userProductRatings') || '{}');
+    return stored[product.id] || 0;
+  });
+
+  // Persist whenever ratingData changes
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem('productRatings') || '{}');
+    stored[product.id] = ratingData;
+    localStorage.setItem('productRatings', JSON.stringify(stored));
+  }, [ratingData, product.id]);
+
+  // Persist user rating
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem('userProductRatings') || '{}');
+    stored[product.id] = userRating;
+    localStorage.setItem('userProductRatings', JSON.stringify(stored));
+  }, [userRating, product.id]);
 
   const handleAddToCart = (e) => {
     e.preventDefault(); // Prevent link navigation
@@ -66,7 +93,11 @@ function ProductCard({ product }) {
           position: 'relative', 
           overflow: 'hidden',
           height: '200px',
-          width: '100%'
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#f5f5f5'
         }}>
           <CardMedia
             className="product-image"
@@ -79,7 +110,7 @@ function ProductCard({ product }) {
               left: 0,
               width: '100%',
               height: '100%',
-              objectFit: 'cover',
+              objectFit: 'contain',
               transition: 'transform 0.3s ease-in-out'
             }}
           />
@@ -127,6 +158,29 @@ function ProductCard({ product }) {
             </Box>
           </Box>
           <Box>
+            {/* Rating and reviews */}
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+              <Rating
+                value={ratingData.rating}
+                precision={0.5}
+                size="small"
+                onChange={(_, newValue) => {
+                  if (!newValue) return;
+                  setUserRating(newValue);
+                  setRatingData(prev => {
+                    const total = prev.rating * prev.numRatings + newValue;
+                    const newCount = prev.numRatings + 1;
+                    return { rating: +(total / newCount).toFixed(1), numRatings: newCount };
+                  });
+                }}
+              />
+              <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
+                {ratingData.rating.toFixed(1)}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                ({ratingData.numRatings.toLocaleString()})
+              </Typography>
+            </Box>
             <Typography variant="h6" color="primary" sx={{ fontWeight: 700, my: 1 }}>
               ₹{product.price}
             </Typography>

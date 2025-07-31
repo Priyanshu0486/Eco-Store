@@ -13,9 +13,15 @@ const generateRandomCode = (length = 6) => {
 };
 
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
+  // Initialize cart from localStorage so items persist across page refreshes
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem('cart');
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+  // Initialize purchase history and ecoCoins from localStorage so they persist across refresh
   const [purchasedItems, setPurchasedItems] = useState([]);
   const [ecoCoins, setEcoCoins] = useState(0);
+  // Initialize cumulative environmental impact from localStorage so totals and charts persist
   const [environmentalImpact, setEnvironmentalImpact] = useState({
     carbonSaved: 0,
     waterReduced: 0,
@@ -28,46 +34,14 @@ export const CartProvider = ({ children }) => {
 
   // Load saved data from localStorage on initial render
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    const savedPurchases = localStorage.getItem('purchasedItems');
-    const savedImpact = localStorage.getItem('environmentalImpact');
-    const savedEcoCoins = localStorage.getItem('ecoCoins');
-    const savedCoupons = localStorage.getItem('coupons');
-
+    const savedCart = localStorage.getItem('cart'); // still load for backward compatibility but will rarely run
     if (savedCart) setCart(JSON.parse(savedCart));
-    if (savedPurchases) setPurchasedItems(JSON.parse(savedPurchases));
-    if (savedImpact) setEnvironmentalImpact(JSON.parse(savedImpact));
-    if (savedEcoCoins) setEcoCoins(JSON.parse(savedEcoCoins));
-    if (savedCoupons) setCoupons(JSON.parse(savedCoupons));
-
-    const savedRedemptionHistory = localStorage.getItem('redemptionHistory');
-    if (savedRedemptionHistory) setRedemptionHistory(JSON.parse(savedRedemptionHistory));
   }, []);
 
   // Save data to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
-
-  useEffect(() => {
-    localStorage.setItem('purchasedItems', JSON.stringify(purchasedItems));
-  }, [purchasedItems]);
-
-  useEffect(() => {
-    localStorage.setItem('environmentalImpact', JSON.stringify(environmentalImpact));
-  }, [environmentalImpact]);
-
-  useEffect(() => {
-    localStorage.setItem('ecoCoins', JSON.stringify(ecoCoins));
-  }, [ecoCoins]);
-
-  useEffect(() => {
-    localStorage.setItem('coupons', JSON.stringify(coupons));
-  }, [coupons]);
-
-  useEffect(() => {
-    localStorage.setItem('redemptionHistory', JSON.stringify(redemptionHistory));
-  }, [redemptionHistory]);
 
   const addToCart = (product) => {
     setCart(prevCart => {

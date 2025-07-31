@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import UserProfile from './pages/UserProfile';
 import { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
 import { CartProvider } from './contexts/CartContext';
@@ -9,6 +10,7 @@ import Wallet from './pages/Wallet';
 import Checkout from './pages/Checkout';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
+import OrderList from './pages/OrderList';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Header from './components/Header';
@@ -48,10 +50,12 @@ function AppContent() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/dashboard" element={<Dashboard user={user} />} />
+          <Route path="/profile" element={<UserProfile user={user} />} />
           <Route path="/eco-store" element={<EcoStore user={user} />} />
           <Route path="/wallet" element={<Wallet />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/orders" element={<OrderList />} />
           <Route path="/product/:productId" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
         </Routes>

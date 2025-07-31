@@ -14,7 +14,8 @@ import {
   List,
   ListItem,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  Rating
 } from '@mui/material';
 import { useCart } from '../contexts/CartContext';
 import { getProductById } from '../utils/api';
@@ -32,6 +33,32 @@ function ProductDetail() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // rating state (shared with ProductCard via localStorage)
+  const [ratingData, setRatingData] = useState(() => {
+    const stored = JSON.parse(localStorage.getItem('productRatings') || '{}');
+    return stored[productId] || { rating: 0, numRatings: 0 };
+  });
+
+  // Track the rating given by the current user
+  const [userRating, setUserRating] = useState(() => {
+    const stored = JSON.parse(localStorage.getItem('userProductRatings') || '{}');
+    return stored[productId] || 0;
+  });
+
+  // persist ratingData
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem('productRatings') || '{}');
+    stored[productId] = ratingData;
+    localStorage.setItem('productRatings', JSON.stringify(stored));
+  }, [ratingData, productId]);
+
+  // persist user rating
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem('userProductRatings') || '{}');
+    stored[productId] = userRating;
+    localStorage.setItem('userProductRatings', JSON.stringify(stored));
+  }, [userRating, productId]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -100,9 +127,31 @@ function ProductDetail() {
               <Typography variant="h3" component="h1" sx={{ fontWeight: 700, mb: 1 }}>
                 {product.name}
               </Typography>
-              <Typography variant="h4" color="primary" sx={{ mb: 2, fontWeight: 600 }}>
-                ₹{product.price.toFixed(2)}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
+                  ₹{product.price.toFixed(2)}
+                </Typography>
+                <Rating
+                  value={ratingData.rating}
+                  precision={0.5}
+                  size="medium"
+                  onChange={(_, newValue) => {
+                    if (!newValue) return;
+                    setUserRating(newValue);
+                    setRatingData(prev => {
+                      const total = prev.rating * prev.numRatings + newValue;
+                      const newCount = prev.numRatings + 1;
+                      return { rating: +(total / newCount).toFixed(1), numRatings: newCount };
+                    });
+                  }}
+                />
+                <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
+                  {ratingData.rating.toFixed(1)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  ({ratingData.numRatings.toLocaleString()})
+                </Typography>
+              </Box>
               <Typography variant="body1" sx={{ mb: 3, fontSize: '1.1rem' }}>
                 {product.description}
               </Typography>
