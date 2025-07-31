@@ -33,8 +33,6 @@ public class ProductService {
         product.setPrice(productRequest.getPrice());
         product.setImageUrl(productRequest.getImageUrl());
         product.setCarbonSaved(productRequest.getCarbonSaved());
-        product.setWaterReduced(productRequest.getWaterReduced());
-        product.setPlasticItemsAvoided(productRequest.getPlasticItemsAvoided());
         product.setQuantity(productRequest.getQuantity());
         return productRepository.save(product);
     }
@@ -50,8 +48,6 @@ public class ProductService {
         product.setPrice(productRequest.getPrice());
         product.setImageUrl(productRequest.getImageUrl());
         product.setCarbonSaved(productRequest.getCarbonSaved());
-        product.setWaterReduced(productRequest.getWaterReduced());
-        product.setPlasticItemsAvoided(productRequest.getPlasticItemsAvoided());
         product.setQuantity(productRequest.getQuantity());
 
         return productRepository.save(product);
@@ -66,5 +62,8 @@ public class ProductService {
 
     public Product getProductById(Long id) {
         return productRepository.findById(id).get();
+    }
+    public List<Product> searchProducts(String query) {
+        return productRepository.searchProducts(query);
     }
 }

@@ -49,8 +49,6 @@ function AdminDashboard() {
     category: '',
     imageUrl: '',
     carbonSaved: '',
-    waterReduced: '',
-    plasticItemsAvoided: '',
     quantity: ''
   });
 
@@ -111,7 +109,7 @@ function AdminDashboard() {
     setIsEditing(false);
     setCurrentProduct({
       name: '', description: '', price: '', category: '', imageUrl: '',
-      carbonSaved: '', waterReduced: '', plasticItemsAvoided: '', quantity: ''
+      carbonSaved: '', quantity: ''
     });
   };
 

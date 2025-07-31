@@ -28,8 +28,4 @@ public class Product {
     private String imageUrl;
 
     private double carbonSaved;
-
-    private double waterReduced;
-
-    private int plasticItemsAvoided;
 }
