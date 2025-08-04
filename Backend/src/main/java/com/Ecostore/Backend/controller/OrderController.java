@@ -27,7 +27,7 @@ public class OrderController {
         this.userService = userService;
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<Order> createOrder(
             @RequestBody CreateOrderRequest req,
             @RequestHeader("Authorization") String jwt) throws Exception {

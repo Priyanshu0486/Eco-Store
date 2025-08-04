@@ -26,7 +26,12 @@ public class Order {
     private List<OrderItem> orderItems = new ArrayList<>();
     private LocalDateTime orderDate;
     private LocalDateTime deliveryDate;
-    private Double totalPrice;
+    private Double totalPrice; // The sub-total before discount
+
+    private Double discount; // The discount amount applied
+
+    private Double finalPrice; // The final price after discount
+
     private String orderStatus; // e.g., PENDING, PLACED, SHIPPED, DELIVERED
     private String shippingAddress;
 

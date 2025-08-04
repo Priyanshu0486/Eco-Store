@@ -107,6 +107,18 @@ export const adminDeleteProduct = async (id) => {
   }
 };
 
+// --- Order API Calls ---
+
+export const createOrder = async (orderData) => {
+  try {
+    const res = await api.post('/api/orders', orderData);
+    return res.data;
+  } catch (error) {
+    console.error('Error creating order:', error);
+    throw error.response.data || error;
+  }
+};
+
 export const getProductById = async (id) => {
   try {
     const res = await api.get(`/api/products/${id}`);

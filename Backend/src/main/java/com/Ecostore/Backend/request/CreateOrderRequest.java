@@ -8,6 +8,8 @@ import java.util.List;
 
 @Data
 public class CreateOrderRequest {
+
+    private String couponCode;
     private AddressDto shippingAddress;
     private List<OrderItemDto> orderItems;
     private String paymentMethod; // e.g., "COD", "Credit Card"

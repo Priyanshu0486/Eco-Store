@@ -2,10 +2,12 @@ package com.Ecostore.Backend.service;
 
 import com.Ecostore.Backend.dto.AddressDto;
 import com.Ecostore.Backend.dto.OrderItemDto;
+import com.Ecostore.Backend.model.DiscountCoupon;
 import com.Ecostore.Backend.model.Order;
 import com.Ecostore.Backend.model.OrderItem;
 import com.Ecostore.Backend.model.Product;
 import com.Ecostore.Backend.model.User;
+import com.Ecostore.Backend.repository.DiscountCouponRepository;
 import com.Ecostore.Backend.repository.OrderRepository;
 import com.Ecostore.Backend.repository.ProductRepository;
 import com.Ecostore.Backend.request.CreateOrderRequest;
@@ -13,6 +15,7 @@ import com.Ecostore.Backend.request.PaymentRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,46 +27,40 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final DiscountCouponRepository discountCouponRepository;
 
     @Autowired
-    public OrderServiceImpl(OrderRepository orderRepository, ProductRepository productRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository, ProductRepository productRepository, DiscountCouponRepository discountCouponRepository) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
+        this.discountCouponRepository = discountCouponRepository;
     }
 
     @Override
     public Order createOrder(User user, CreateOrderRequest req) {
-        // 1. Create the main Order object and set its initial details.
         Order order = new Order();
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());
 
-        // Extract shipping address from the request object
         AddressDto shippingAddress = req.getShippingAddress();
         order.setShippingAddress(shippingAddress.getStreetAddress() + ", " + shippingAddress.getCity() + ", " + shippingAddress.getState() + " - " + shippingAddress.getZipCode());
 
         order.setOrderStatus("PLACED");
         order.setPaymentMethod(req.getPaymentMethod());
 
-        // --- THIS IS THE NEW LOGIC ---
-        // Check the payment method to set the correct payment status.
         if ("COD".equalsIgnoreCase(req.getPaymentMethod())) {
             order.setPaymentStatus("PENDING");
         } else {
-            // --- VALIDATION LOGIC ---
             if (req.getPaymentId() == null || req.getPaymentId().isEmpty()) {
                 throw new IllegalArgumentException("Payment ID is required for online payments.");
             }
             order.setPaymentStatus("COMPLETED");
             order.setPaymentId(req.getPaymentId());
         }
-        // --- END OF NEW LOGIC ---
 
-        // 2. Create an empty list to hold our fully prepared OrderItem entities.
         List<OrderItem> preparedOrderItems = new ArrayList<>();
         double totalPrice = 0.0;
 
-        // 3. Loop through each item DTO from the request.
         for (OrderItemDto dto : req.getOrderItems()) {
             Product product = productRepository.findById(dto.getProductId())
                     .orElseThrow(() -> new RuntimeException("Product not found with id: " + dto.getProductId()));
@@ -71,20 +68,53 @@ public class OrderServiceImpl implements OrderService {
             OrderItem orderItem = new OrderItem();
             orderItem.setProduct(product);
             orderItem.setQuantity(dto.getQuantity());
-
-            double itemPrice = product.getPrice() * dto.getQuantity();
-            orderItem.setPrice(itemPrice);
-            totalPrice += itemPrice;
-
+            orderItem.setPrice(product.getPrice() * dto.getQuantity());
             orderItem.setOrder(order);
             preparedOrderItems.add(orderItem);
+
+            totalPrice += orderItem.getPrice();
         }
 
-        // 4. Set the list of prepared items and the final total price on the order.
         order.setOrderItems(preparedOrderItems);
         order.setTotalPrice(totalPrice);
 
-        // 5. Save the complete order to the database.
+        double finalPrice = totalPrice;
+        double discount = 0.0;
+
+        if (req.getCouponCode() != null && !req.getCouponCode().isEmpty()) {
+            // First, try to find a matching coupon in the database (percentage-based coupons)
+            Optional<DiscountCoupon> couponOpt = discountCouponRepository.findByCode(req.getCouponCode());
+
+            if (couponOpt.isPresent()) {
+                DiscountCoupon coupon = couponOpt.get();
+                if (!coupon.isActive() || coupon.getExpiryDate().isBefore(LocalDate.now())) {
+                    throw new IllegalArgumentException("Coupon is not active or has expired.");
+                }
+                // Percentage-based discount
+                discount = totalPrice * (coupon.getDiscountPercentage() / 100.0);
+            } else {
+                // Handle fixed-amount coupons generated by the frontend wallet (e.g. ECO50-XXXX, ECO150-XXXX)
+                String code = req.getCouponCode().toUpperCase();
+
+                // Wallet coupons require a minimum spend of ₹300 (same rule as frontend)
+                if (totalPrice < 300) {
+                    throw new IllegalArgumentException("A minimum spend of ₹300 is required to use this coupon.");
+                }
+
+                if (code.startsWith("ECO50-")) {
+                    discount = Math.min(50, totalPrice);
+                } else if (code.startsWith("ECO150-")) {
+                    discount = Math.min(150, totalPrice);
+                } else {
+                    throw new IllegalArgumentException("Invalid coupon code.");
+                }
+            }
+            finalPrice = totalPrice - discount;
+        }
+
+        order.setDiscount(discount);
+        order.setFinalPrice(finalPrice);
+
         return orderRepository.save(order);
     }
 
