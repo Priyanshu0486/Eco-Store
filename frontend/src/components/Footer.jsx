@@ -86,7 +86,7 @@ function Footer() {
                 mb: 2
               }}
             >
-              ECO-STORE
+              ECOSTORE
             </Typography>
             <Typography 
               variant="body2" 

@@ -30,7 +30,10 @@ export const CartProvider = ({ children }) => {
 
   const [coupons, setCoupons] = useState([]);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [redemptionHistory, setRedemptionHistory] = useState([]);
+  const [redemptionHistory, setRedemptionHistory] = useState(() => {
+    const savedHistory = localStorage.getItem('redemptionHistory');
+    return savedHistory ? JSON.parse(savedHistory) : [];
+  });
 
   // Load saved data from localStorage on initial render
   useEffect(() => {
@@ -42,6 +45,10 @@ export const CartProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
+
+  useEffect(() => {
+    localStorage.setItem('redemptionHistory', JSON.stringify(redemptionHistory));
+  }, [redemptionHistory]);
 
   const addToCart = (product) => {
     setCart(prevCart => {

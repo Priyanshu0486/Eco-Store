@@ -230,76 +230,6 @@ function Dashboard({ user }) {
               </Typography>
             </Box>
           </Box>
-          
-          {/* Water Reduced Card */}
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center',
-            p: 2,
-            borderRadius: 2,
-            backgroundColor: 'rgba(33, 150, 243, 0.1)',
-            height: '100%'
-          }}>
-            <Avatar 
-              sx={{ 
-                bgcolor: 'primary.light',
-                color: 'primary.dark',
-                mr: 2,
-                width: 60,
-                height: 60,
-                fontSize: 30,
-                flexShrink: 0
-              }}
-            >
-              <WaterDropIcon sx={{ fontSize: 30 }} />
-            </Avatar>
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: '0.9rem', fontWeight: 500 }}>
-                Water Reduced
-              </Typography>
-              <Typography variant="h5" fontWeight={700} color="primary.dark">
-                {environmentalImpact.waterReduced} L
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                ≈ {Math.round(environmentalImpact.waterReduced * 0.26)} gallons
-              </Typography>
-            </Box>
-          </Box>
-          
-          {/* Plastic Avoided Card */}
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center',
-            p: 2,
-            borderRadius: 2,
-            backgroundColor: 'rgba(233, 30, 99, 0.1)',
-            height: '100%'
-          }}>
-            <Avatar 
-              sx={{ 
-                bgcolor: 'secondary.light',
-                color: 'secondary.dark',
-                mr: 2,
-                width: 60,
-                height: 60,
-                fontSize: 30,
-                flexShrink: 0
-              }}
-            >
-              <DoNotTouchIcon sx={{ fontSize: 30 }} />
-            </Avatar>
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: '0.9rem', fontWeight: 500 }}>
-                Plastic Avoided
-              </Typography>
-              <Typography variant="h5" fontWeight={700} color="secondary.dark">
-                {environmentalImpact.plasticAvoided} items
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {environmentalImpact.plasticAvoided > 0 ? 'That\'s great for our oceans!' : 'Make a purchase to start saving'}
-              </Typography>
-            </Box>
-          </Box>
         </Box>
       </Paper>
 
@@ -331,7 +261,6 @@ function Dashboard({ user }) {
                   <Tooltip />
                   <Legend />
                   <Bar yAxisId="left" dataKey="carbonSaved" fill="#4caf50" name="Carbon Saved (kg)" maxBarSize={60} />
-                  <Bar yAxisId="right" dataKey="waterReduced" fill="#2196f3" name="Water Reduced (L)" maxBarSize={60} />
                 </BarChart>
               </ResponsiveContainer>
             </Box>
