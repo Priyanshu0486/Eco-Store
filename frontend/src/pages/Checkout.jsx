@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { Container, Typography, Paper, Button, Box, List, ListItem, ListItemText, Divider, CircularProgress, TextField, Chip, IconButton, Grid, Alert } from '@mui/material';
+import { Container, Typography, Paper, Button, Box, List, ListItem, ListItemText, Divider, CircularProgress, TextField, Chip, IconButton, Grid, Alert, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel } from '@mui/material';
 import { useCart } from '../contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { Add, Remove, Delete } from '@mui/icons-material';
-import { calculateEcoCoins, createOrder } from '../utils/api';
+import { calculateEcoCoins, createOrder, createPaymentOrder } from '../utils/api';
 
 function Checkout() {
   const { cart, appliedCoupon, applyCoupon, removeCoupon, removeFromCart, increaseQuantity, decreaseQuantity, checkout } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [error, setError] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('COD');
   const [shippingAddress, setShippingAddress] = useState({
     streetAddress: '',
     city: '',
@@ -17,6 +18,17 @@ function Checkout() {
     zipCode: '',
   });
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const handleAddressChange = (e) => {
     const { name, value } = e.target;
@@ -30,32 +42,97 @@ function Checkout() {
       setError('Please fill in all shipping address fields.');
       return;
     }
-    
+
+    // Calculate totals
+    const shippingCost = 49;
+    const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    const discount = appliedCoupon
+      ? appliedCoupon.type === 'percentage'
+          ? subtotal * appliedCoupon.discount
+          : appliedCoupon.discount
+      : 0;
+    const total = subtotal - discount + shippingCost;
+
     setIsProcessing(true);
     setError(null);
 
-    const orderData = {
-      shippingAddress: shippingAddress,
-      orderItems: cart.map(item => ({
-        productId: item.id,
-        quantity: item.quantity,
-      })),
-      paymentMethod: 'COD', // Hardcoding to COD for now
-      paymentId: null,      // No payment ID for COD
-      couponCode: appliedCoupon ? appliedCoupon.code : null,
-    };
+    if (paymentMethod === 'COD') {
+      const orderData = {
+        shippingAddress: shippingAddress,
+        orderItems: cart.map(item => ({ productId: item.id, quantity: item.quantity })),
+        paymentMethod: 'COD',
+        paymentId: null,
+        couponCode: appliedCoupon ? appliedCoupon.code : null,
+      };
 
-    try {
-      await createOrder(orderData);
-      // Update frontend wallet and other stats
-      checkout();
-      alert('Order placed successfully!');
-      navigate('/dashboard');
-    } catch (err) {
-      console.error('Failed to create order:', err);
-      setError(err.message || 'An unexpected error occurred. Please try again.');
-    } finally {
-      setIsProcessing(false);
+      try {
+        await createOrder(orderData);
+        checkout();
+        alert('Order placed successfully!');
+        navigate('/dashboard');
+      } catch (err) {
+        console.error('Failed to create order:', err);
+        setError(err.message || 'An unexpected error occurred.');
+      } finally {
+        setIsProcessing(false);
+      }
+    } else if (paymentMethod === 'RAZORPAY') {
+      try {
+        const paymentOrder = await createPaymentOrder(Math.round(total));
+        const { orderId, amount } = paymentOrder;
+
+        const options = {
+          key: 'rzp_test_fFrUf9BaSe3JT1', // Replace with your actual Razorpay Key ID
+          amount: amount,
+          currency: "INR",
+          name: "Eco-Store",
+          description: "Order Payment",
+          order_id: orderId,
+          handler: async function (response) {
+            const orderData = {
+              shippingAddress,
+              orderItems: cart.map(item => ({ productId: item.id, quantity: item.quantity })),
+              couponCode: appliedCoupon ? appliedCoupon.code : null,
+              paymentMethod: 'RAZORPAY',
+              paymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature,
+            };
+
+            try {
+              await createOrder(orderData);
+              checkout();
+              alert('Payment successful and order placed!');
+              navigate('/dashboard');
+            } catch (err) {
+              console.error('Failed to create final order:', err);
+              setError(err.message || 'Failed to finalize order after payment.');
+            }
+          },
+          prefill: {
+            name: "Eco-Store User",
+            email: "user@ecostore.com",
+            contact: "9999999999"
+          },
+          theme: {
+            color: "#4CAF50"
+          }
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+
+        rzp.on('payment.failed', function (response) {
+          setError(`Payment failed: ${response.error.description}`);
+          console.error(response.error);
+        });
+
+      } catch (err) {
+        console.error('Razorpay error:', err);
+        setError(err.message || 'Could not connect to payment gateway.');
+      } finally {
+        setIsProcessing(false);
+      }
     }
   };
 
@@ -177,7 +254,15 @@ function Checkout() {
               )}
             </Box>
 
-            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+            <FormControl component="fieldset" sx={{ mt: 3, width: '100%' }}>
+              <FormLabel component="legend">Payment Method</FormLabel>
+              <RadioGroup row value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
+                <FormControlLabel value="COD" control={<Radio />} label="Cash on Delivery" />
+                <FormControlLabel value="RAZORPAY" control={<Radio />} label="Pay with Razorpay" />
+              </RadioGroup>
+            </FormControl>
+
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
               <Button fullWidth variant='contained' color='success' size="large" onClick={handlePurchase} disabled={isProcessing} startIcon={isProcessing ? <CircularProgress size={20} color="inherit" /> : null}>
                 {isProcessing ? 'Processing...' : 'Complete Purchase'}
               </Button>

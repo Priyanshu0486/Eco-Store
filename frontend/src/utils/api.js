@@ -107,6 +107,20 @@ export const adminDeleteProduct = async (id) => {
   }
 };
 
+// --- Payment API Calls ---
+
+export const createPaymentOrder = async (amount) => {
+  try {
+    // The backend expects the amount in the main currency unit (e.g., Rupees).
+    // It will handle the conversion to the smallest unit (e.g., paise).
+    const res = await api.post('/api/payments/create', { amount });
+    return res.data;
+  } catch (error) {
+    console.error('Error creating payment order:', error);
+    throw error.response?.data || error;
+  }
+};
+
 // --- Order API Calls ---
 
 export const createOrder = async (orderData) => {
