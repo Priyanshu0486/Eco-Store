@@ -83,7 +83,14 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- For password validation -->
+		<!-- Razorpay Dependency -->
+        <dependency>
+            <groupId>com.razorpay</groupId>
+            <artifactId>razorpay-java</artifactId>
+            <version>1.4.8</version>
+        </dependency>
+
+        <!-- For password validation -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>

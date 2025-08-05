@@ -38,5 +38,6 @@ public class Order {
     // For payment details
     private String paymentMethod; // e.g., "Credit Card", "PayPal"
     private String paymentId; // from the payment provider
+    private String razorpayOrderId; // from razorpay
     private String paymentStatus = "PENDING";
 }

@@ -11,6 +11,10 @@ import com.Ecostore.Backend.repository.DiscountCouponRepository;
 import com.Ecostore.Backend.repository.OrderRepository;
 import com.Ecostore.Backend.repository.ProductRepository;
 import com.Ecostore.Backend.request.CreateOrderRequest;
+import com.razorpay.Utils;
+import com.razorpay.RazorpayException;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import com.Ecostore.Backend.request.PaymentRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +32,12 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final DiscountCouponRepository discountCouponRepository;
+
+    @Value("${razorpay.key.id}")
+    private String razorpayKeyId;
+
+    @Value("${razorpay.key.secret}")
+    private String razorpayKeySecret;
 
     @Autowired
     public OrderServiceImpl(OrderRepository orderRepository, ProductRepository productRepository, DiscountCouponRepository discountCouponRepository) {
@@ -50,12 +60,21 @@ public class OrderServiceImpl implements OrderService {
 
         if ("COD".equalsIgnoreCase(req.getPaymentMethod())) {
             order.setPaymentStatus("PENDING");
-        } else {
-            if (req.getPaymentId() == null || req.getPaymentId().isEmpty()) {
-                throw new IllegalArgumentException("Payment ID is required for online payments.");
+        } else if ("RAZORPAY".equalsIgnoreCase(req.getPaymentMethod())) {
+            try {
+                boolean isSignatureValid = verifyPaymentSignature(req);
+                if (isSignatureValid) {
+                    order.setPaymentId(req.getPaymentId());
+                    order.setRazorpayOrderId(req.getRazorpayOrderId());
+                    order.setPaymentStatus("COMPLETED");
+                } else {
+                    throw new IllegalArgumentException("Payment verification failed: Invalid signature.");
+                }
+            } catch (RazorpayException e) {
+                throw new RuntimeException("Error verifying payment signature", e);
             }
-            order.setPaymentStatus("COMPLETED");
-            order.setPaymentId(req.getPaymentId());
+        } else {
+             throw new IllegalArgumentException("Unsupported payment method: " + req.getPaymentMethod());
         }
 
         List<OrderItem> preparedOrderItems = new ArrayList<>();
@@ -116,6 +135,23 @@ public class OrderServiceImpl implements OrderService {
         order.setFinalPrice(finalPrice);
 
         return orderRepository.save(order);
+    }
+
+    private boolean verifyPaymentSignature(CreateOrderRequest req) throws RazorpayException {
+        String orderId = req.getRazorpayOrderId();
+        String paymentId = req.getPaymentId();
+        String signature = req.getRazorpaySignature();
+
+        if (orderId == null || paymentId == null || signature == null) {
+            throw new IllegalArgumentException("Razorpay payment details are missing.");
+        }
+
+        JSONObject options = new JSONObject();
+        options.put("razorpay_order_id", orderId);
+        options.put("razorpay_payment_id", paymentId);
+        options.put("razorpay_signature", signature);
+
+        return Utils.verifyPaymentSignature(options, this.razorpayKeySecret);
     }
 
     @Override
