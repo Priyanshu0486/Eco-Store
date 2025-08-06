@@ -28,7 +28,11 @@ function Wallet() {
   };
   
   return (
-    <Box sx={{ backgroundColor: '#f0f4f8', minHeight: '100vh', py: 5 }}>
+    <Box sx={{ 
+      minHeight: '100vh', 
+      py: 5,
+      background: 'radial-gradient(circle at top left, #e0f7fa 0%, #e8f5e9 40%, #fffde7 100%)',
+    }}>
       <Container maxWidth="lg">
         <Typography 
           variant="h2" 

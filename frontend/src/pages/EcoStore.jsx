@@ -87,7 +87,7 @@ function EcoStore() {
   );
 
   return (
-    <Box sx={{ backgroundColor: '#f9f9f9', minHeight: '100vh', py: 4 }}>
+    <Box sx={{background: 'radial-gradient(circle at top left, #e0f7fa 0%, #e8f5e9 40%, #fffde7 100%)', py: 4}}>
       <Container maxWidth="lg">
         <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Typography 
@@ -96,7 +96,7 @@ function EcoStore() {
             sx={{ 
               fontWeight: 800, 
               mb: 2,
-              background: 'linear-gradient(45deg, #2e7d32 30%, #4caf50 90%)',
+              background: 'linear-gradient(45deg,rgb(70, 161, 75) 30%, #4caf50 90%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               display: 'inline-block'

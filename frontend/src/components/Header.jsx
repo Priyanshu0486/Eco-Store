@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import logo from "../pages/logo.png";
 import { 
   AppBar, 
   Toolbar, 
@@ -21,7 +22,6 @@ import {
   MenuItem,
   ListItemIcon,
   Tooltip,
-  rgbToHex
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -233,21 +233,29 @@ function Header({ user, onLogout }) {
     >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <Typography
-            variant="h6"
-            component={Link}
-            to="/"
-            sx={{
-              mr: 2,
-              fontWeight: 700,
-              letterSpacing: '.2rem',
-              color: 'primary.main',
-              textDecoration: 'none',
-              flexGrow: { xs: 1, md: 0 }
-            }}
-          >
-            ECOSTORE
-          </Typography>
+          <Box component={Link} to="/" sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexGrow: { xs: 1, md: 0 } }}>
+            <img 
+              src= {logo}
+              alt="EcoStore Logo" 
+              style={{
+                height: '70px',
+                marginRight: '5px',
+                objectFit: 'contain'
+              }}
+            />
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                letterSpacing: '.2rem',
+                color: 'primary.main',
+                textDecoration: 'none',
+                display: { xs: 'none', sm: 'block' } // Hide text on extra small screens
+              }}
+            >
+              ECOSTORE
+            </Typography>
+          </Box>
 
           {isMobile ? (
             <IconButton
@@ -279,13 +287,14 @@ function Header({ user, onLogout }) {
                           content: '""',
                           position: 'absolute',
                           bottom: 0,
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          width: isActive ? '100%' : '0%',
-                          height: '5px',
+                          left: 0,
+                          width: '100%',
+                          height: '4px',
                           backgroundColor: 'primary.main',
-                          transition: 'width 0.3s ease-in-out',
-                          borderRadius: '10px',
+                          transformOrigin: 'left center',
+                          transform: isActive ? 'scaleX(1)' : 'scaleX(0)',
+                          transition: 'transform 0.3s ease-in-out',
+                          borderRadius: '2px',
                         },
                       }}
                     >
