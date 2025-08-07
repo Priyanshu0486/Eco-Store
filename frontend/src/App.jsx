@@ -24,7 +24,7 @@ function AppContent() {
 
   useEffect(() => {
     // Check for a token in localStorage when the app starts
-    const token = localStorage.getItem('ecoToken');
+    const token = localStorage.getItem('jwt');
     if (token) {
       // If a token exists, assume the user is logged in.
       // For enhanced security, you could add a call here to verify the token with the backend.
@@ -33,7 +33,7 @@ function AppContent() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('ecoToken'); // Clear the token on logout
+    localStorage.removeItem('jwt'); // Clear the token on logout
     // Redirect to the homepage and force a refresh to clear all state
     window.location.href = '/';
   };

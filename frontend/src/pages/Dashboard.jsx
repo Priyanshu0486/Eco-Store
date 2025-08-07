@@ -27,14 +27,32 @@ import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import { Link as RouterLink } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { useCart } from '../contexts/CartContext';
-import { calculateEcoCoins } from '../utils/api';
+import { calculateEcoCoins, fetchDashboardStats, fetchRecentOrders, fetchEcoCoinBalance } from '../utils/api';
 
 function Dashboard({ user }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { purchasedItems, environmentalImpact } = useCart();
+  
+  // Loading and error states
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Dashboard statistics from backend
+  const [dashboardStats, setDashboardStats] = useState({
+    totalSpent: 0,
+    totalSaved: 0,
+    ecoCoinsEarned: 0,
+    carbonSaved: 0,
+    totalOrders: 0
+  });
+  
+  // Order history from backend
+  const [recentOrders, setRecentOrders] = useState([]);
+  
+  // Current EcoCoin balance
+  const [currentEcoCoinBalance, setCurrentEcoCoinBalance] = useState(0);
+  
+  // Legacy state for fallback (if no backend data)
   const [purchaseHistory, setPurchaseHistory] = useState([]);
   const [totalSpent, setTotalSpent] = useState(0);
   const [totalSaved, setTotalSaved] = useState(0);
@@ -43,72 +61,70 @@ function Dashboard({ user }) {
   const [timeRange, setTimeRange] = useState(30); // Default to 30 days
 
   useEffect(() => {
-    // Process purchased items for display
-    const processPurchases = () => {
-      if (!purchasedItems || purchasedItems.length === 0) {
+    const loadDashboardData = async () => {
+      // Check if user is authenticated
+      const token = localStorage.getItem('jwt');
+      if (!token) {
+        setError('Please log in to view your dashboard.');
         setLoading(false);
         return;
       }
+      
+      try {
+        setLoading(true);
+        setError(null);
 
-      // Group purchases by date
-      const groupedByDate = purchasedItems.reduce((acc, item) => {
-        const date = item.purchaseDate || new Date().toISOString().split('T')[0];
-        if (!acc[date]) {
-          acc[date] = [];
-        }
-        acc[date].push(item);
-        return acc;
-      }, {});
+        // Fetch dashboard statistics, recent orders, and EcoCoin balance in parallel
+        const [statsData, ordersData, ecoCoinBalance] = await Promise.all([
+          fetchDashboardStats(),
+          fetchRecentOrders(),
+          fetchEcoCoinBalance()
+        ]);
 
-      // Convert to array and sort by date (newest first)
-      const sortedPurchases = Object.entries(groupedByDate)
-        .sort(([dateA], [dateB]) => new Date(dateB) - new Date(dateA))
-        .map(([date, items]) => ({
-          date,
-          items: items.map(item => ({
-            ...item,
-            ecoCoins: calculateEcoCoins(item.price || 0) * (item.quantity || 1)
-          }))
-        }));
+        // Update dashboard statistics
+        setDashboardStats(statsData);
+        setRecentOrders(ordersData);
+        setCurrentEcoCoinBalance(ecoCoinBalance);
 
-      // Calculate totals
-      const spent = purchasedItems.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
-      const saved = purchasedItems.reduce((sum, item) => sum + (item.couponDiscount || 0), 0);
-      const ecoCoins = purchasedItems.reduce((sum, item) => {
-        const coinsPerItem = calculateEcoCoins(item.price || 0);
-        return sum + coinsPerItem * (item.quantity || 1);
-      }, 0);
+        // Update legacy state for backward compatibility
+        setTotalSpent(statsData.totalSpent || 0);
+        setTotalSaved(statsData.totalSaved || 0);
+        setTotalEcoCoins(statsData.ecoCoinsEarned || 0);
 
-      setPurchaseHistory(sortedPurchases);
-      setTotalSpent(spent);
-      setTotalSaved(saved);
-      setTotalEcoCoins(ecoCoins);
+        // Prepare chart data from recent orders
+        const chartDataFromOrders = ordersData
+          .slice(-7) // Last 7 orders for chart
+          .map(order => ({
+            date: new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            carbonSaved: order.orderItems?.reduce((sum, item) => 
+              sum + (item.product?.carbonSaved || 0) * item.quantity, 0) || 0,
+            waterReduced: 0, // You can add this field to your backend if needed
+          }));
 
-      // Filter data based on time range
-      const now = new Date();
-      const filteredPurchases = sortedPurchases.filter(group => {
-        const purchaseDate = new Date(group.date);
-        const diffTime = Math.abs(now - purchaseDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays <= timeRange;
-      });
+        setChartData(chartDataFromOrders);
 
-      // Prepare data for the chart
-      const dataForChart = filteredPurchases
-        .slice()
-        .reverse()
-        .map(group => ({
-          date: new Date(group.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          carbonSaved: group.items.reduce((sum, item) => sum + (item.carbonSaved || 0), 0),
-          waterReduced: group.items.reduce((sum, item) => sum + (item.waterReduced || 0), 0),
-        }));
-
-      setChartData(dataForChart);
-      setLoading(false);
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        setError('Failed to load dashboard data. Please try again later.');
+        
+        // Set default values if backend fails
+        setDashboardStats({
+          totalSpent: 0,
+          totalSaved: 0,
+          ecoCoinsEarned: 0,
+          carbonSaved: 0,
+          totalOrders: 0
+        });
+        setCurrentEcoCoinBalance(0);
+        setRecentOrders([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    processPurchases();
-  }, [purchasedItems, timeRange]);
+    // Load data from backend
+    loadDashboardData();
+  }, [timeRange]); 
 
   if (loading) {
     return (
@@ -146,22 +162,36 @@ function Dashboard({ user }) {
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3 }}>
           <Chip 
             icon={<LocalAtmIcon />} 
-            label={`Total Spent: ₹${totalSpent.toFixed(2)}`} 
+            label={`Total Spent: ₹${(dashboardStats.totalSpent || 0).toFixed(2)}`} 
             color="primary" 
             variant="outlined"
             sx={{ px: 1, fontWeight: 500 }}
           />
           <Chip 
             icon={<SavingsIcon />} 
-            label={`Total Saved: ₹${totalSaved.toFixed(2)}`} 
+            label={`Total Saved: ₹${(dashboardStats.totalSaved || 0).toFixed(2)}`} 
             color="secondary"
             variant="outlined"
             sx={{ px: 1, fontWeight: 500 }}
           />
           <Chip 
             icon={<SavingsIcon />} 
-            label={`Earned: ${Math.round(totalEcoCoins)} EcoCoins`} 
+            label={`Earned: ${dashboardStats.ecoCoinsEarned || 0} EcoCoins`} 
             color="success" 
+            variant="outlined"
+            sx={{ px: 1, fontWeight: 500 }}
+          />
+          <Chip 
+            icon={<LocalAtmIcon />} 
+            label={`Balance: ${currentEcoCoinBalance} EcoCoins`} 
+            color="info" 
+            variant="filled"
+            sx={{ px: 1, fontWeight: 500, backgroundColor: '#4caf50', color: 'white' }}
+          />
+          <Chip 
+            icon={<Co2Icon />} 
+            label={`Carbon Saved: ${(dashboardStats.carbonSaved || 0).toFixed(1)} kg`} 
+            color="warning" 
             variant="outlined"
             sx={{ px: 1, fontWeight: 500 }}
           />
@@ -223,10 +253,10 @@ function Dashboard({ user }) {
                 Carbon Saved
               </Typography>
               <Typography variant="h5" fontWeight={700} color="success.dark">
-                {environmentalImpact.carbonSaved.toFixed(1)} kg
+                {(dashboardStats.carbonSaved || 0).toFixed(1)} kg
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                ≈ {Math.round(environmentalImpact.carbonSaved * 2.2)} lbs of CO₂
+                ≈ {Math.round((dashboardStats.carbonSaved || 0) * 2.2)} lbs of CO₂
               </Typography>
             </Box>
           </Box>
@@ -299,7 +329,21 @@ function Dashboard({ user }) {
             Your Purchase History
           </Typography>
           
-          {purchaseHistory.length === 0 ? (
+          {error && (
+            <Box sx={{ 
+              textAlign: 'center', 
+              py: 2,
+              backgroundColor: '#ffebee',
+              borderRadius: 2,
+              mb: 2
+            }}>
+              <Typography variant="body2" color="error">
+                {error}
+              </Typography>
+            </Box>
+          )}
+          
+          {recentOrders.length === 0 ? (
             <Box sx={{ 
               textAlign: 'center', 
               py: 4,
@@ -308,21 +352,21 @@ function Dashboard({ user }) {
             }}>
               <ShoppingBagIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
               <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                No purchases yet
+                No orders yet
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Your eco-friendly purchases will appear here
+                Your recent orders will appear here
               </Typography>
             </Box>
           ) : (
             <List disablePadding>
-              {purchaseHistory.map((purchaseGroup, groupIndex) => (
-                <React.Fragment key={purchaseGroup.date}>
+              {recentOrders.map((order, orderIndex) => (
+                <React.Fragment key={order.id}>
                   <Typography 
                     variant="subtitle2" 
                     color="text.secondary" 
                     sx={{ 
-                      mt: groupIndex > 0 ? 3 : 0, 
+                      mt: orderIndex > 0 ? 3 : 0, 
                       mb: 1,
                       fontWeight: 500,
                       textTransform: 'uppercase',
@@ -330,15 +374,63 @@ function Dashboard({ user }) {
                       fontSize: '0.75rem'
                     }}
                   >
-                    {new Date(purchaseGroup.date).toLocaleDateString('en-US', {
+                    Order #{order.id} - {new Date(order.orderDate).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'
                     })}
                   </Typography>
                   
-                  {purchaseGroup.items.map((item, itemIndex) => (
-                    <React.Fragment key={`${item.id}-${itemIndex}`}>
+                  
+                  {/* Order Summary */}
+                  <ListItem 
+                    disablePadding 
+                    sx={{ 
+                      py: 2,
+                      px: 0,
+                      backgroundColor: 'rgba(25, 118, 210, 0.04)',
+                      borderRadius: 1,
+                      mb: 1
+                    }}
+                  >
+                    <Box sx={{ flex: 1, px: 2 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Order Status: 
+                        </Typography>
+                        <Chip 
+                          label={order.orderStatus || 'PLACED'} 
+                          size="small"
+                          color={order.orderStatus === 'DELIVERED' ? 'success' : 'primary'}
+                          variant="outlined"
+                        />
+                      </Box>
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {order.orderItems?.length || 0} items • Total: 
+                        </Typography>
+                        <Typography variant="subtitle1" fontWeight={600} color="primary.main">
+                          ₹{(order.finalPrice || 0).toFixed(2)}
+                        </Typography>
+                      </Box>
+                      
+                      {order.discount && order.discount > 0 && (
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography variant="body2" color="text.secondary">
+                            Discount: 
+                          </Typography>
+                          <Typography variant="body2" color="success.main">
+                            -₹{order.discount.toFixed(2)}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </ListItem>
+                  
+                  {/* Order Items */}
+                  {order.orderItems && order.orderItems.map((orderItem, itemIndex) => (
+                    <React.Fragment key={`${order.id}-${orderItem.id || itemIndex}`}>
                       <ListItem 
                         disablePadding 
                         sx={{ 
@@ -353,7 +445,7 @@ function Dashboard({ user }) {
                         }}
                       >
                         <Avatar 
-                          src={item.image}
+                          src={orderItem.product?.imageUrl}
                           variant="rounded"
                           sx={{ 
                             bgcolor: 'grey.100',
@@ -380,16 +472,16 @@ function Dashboard({ user }) {
                                   textOverflow: 'ellipsis'
                                 }}
                               >
-                                {item.name}
+                                {orderItem.product?.name || 'Product'}
                               </Typography>
-                              {item.quantity > 1 && (
+                              {orderItem.quantity > 1 && (
                                 <Typography variant="body2" color="text.secondary">
-                                  Quantity: {item.quantity}
+                                  Quantity: {orderItem.quantity}
                                 </Typography>
                               )}
                             </Box>
                             <Typography variant="subtitle1" fontWeight={600}>
-                              ₹{(item.price * (item.quantity || 1)).toFixed(2)}
+                              ₹{(orderItem.price || 0).toFixed(2)}
                             </Typography>
                           </Box>
                           
@@ -397,7 +489,7 @@ function Dashboard({ user }) {
                             <Chip 
                               size="small"
                               icon={<Co2Icon sx={{ fontSize: '14px !important' }} />} 
-                              label={`${item.carbonSaved || 0}kg CO₂`} 
+                              label={`${((orderItem.product?.carbonSaved || 0) * orderItem.quantity).toFixed(1)}kg CO₂`} 
                               sx={{ 
                                 backgroundColor: 'rgba(76, 175, 80, 0.1)',
                                 color: 'success.dark',
@@ -406,48 +498,50 @@ function Dashboard({ user }) {
                               }}
                             />
                             
-                            <Chip 
-                              size="small"
-                              icon={<WaterDropIcon sx={{ fontSize: '14px !important' }} />} 
-                              label={`${item.waterReduced || 0}L water`} 
-                              sx={{ 
-                                backgroundColor: 'rgba(33, 150, 243, 0.1)',
-                                color: 'primary.dark',
-                                fontWeight: 500,
-                                '& .MuiChip-icon': { color: 'primary.dark' }
-                              }}
-                            />
-                            
-                            <Chip 
-                              size="small"
-                              icon={<DoNotTouchIcon sx={{ fontSize: '14px !important' }} />} 
-                              label={`${item.plasticAvoided || 0} less plastic`} 
-                              sx={{ 
-                                backgroundColor: 'rgba(233, 30, 99, 0.1)',
-                                color: 'secondary.dark',
-                                fontWeight: 500,
-                                '& .MuiChip-icon': { color: 'secondary.dark' }
-                              }}
-                            />
-                            
-                            {item.ecoCoins > 0 && (
+                            {orderItem.product?.waterReduced && (
                               <Chip 
                                 size="small"
-                                icon={<LocalAtmIcon sx={{ fontSize: '14px !important' }} />} 
-                                label={`+${item.ecoCoins} EcoCoins`} 
+                                icon={<WaterDropIcon sx={{ fontSize: '14px !important' }} />} 
+                                label={`${(orderItem.product.waterReduced * orderItem.quantity).toFixed(1)}L water`} 
                                 sx={{ 
-                                  backgroundColor: 'rgba(255, 193, 7, 0.1)',
-                                  color: 'warning.dark',
+                                  backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                                  color: 'primary.dark',
                                   fontWeight: 500,
-                                  '& .MuiChip-icon': { color: 'warning.dark' }
+                                  '& .MuiChip-icon': { color: 'primary.dark' }
                                 }}
                               />
                             )}
+                            
+                            {orderItem.product?.plasticAvoided && (
+                              <Chip 
+                                size="small"
+                                icon={<DoNotTouchIcon sx={{ fontSize: '14px !important' }} />} 
+                                label={`${(orderItem.product.plasticAvoided * orderItem.quantity).toFixed(1)} less plastic`} 
+                                sx={{ 
+                                  backgroundColor: 'rgba(233, 30, 99, 0.1)',
+                                  color: 'secondary.dark',
+                                  fontWeight: 500,
+                                  '& .MuiChip-icon': { color: 'secondary.dark' }
+                                }}
+                              />
+                            )}
+                            
+                            <Chip 
+                              size="small"
+                              icon={<LocalAtmIcon sx={{ fontSize: '14px !important' }} />} 
+                              label={`+${Math.floor((orderItem.price || 0) / 10)} EcoCoins`} 
+                              sx={{ 
+                                backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                                color: 'warning.dark',
+                                fontWeight: 500,
+                                '& .MuiChip-icon': { color: 'warning.dark' }
+                              }}
+                            />
                           </Box>
                         </Box>
                       </ListItem>
                       
-                      {itemIndex < purchaseGroup.items.length - 1 && (
+                      {itemIndex < (order.orderItems?.length || 0) - 1 && (
                         <Divider sx={{ my: 0.5, mx: 2 }} />
                       )}
                     </React.Fragment>

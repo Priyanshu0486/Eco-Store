@@ -31,5 +31,8 @@ public class User {
     private LocalDate dateOfBirth; // <-- Add this line
 
     @Enumerated(EnumType.STRING)
-    private Role role; // <-- Add this line
+    private Role role;
+
+    @Column(name = "ecocoin_balance", nullable = false, columnDefinition = "INT DEFAULT 0")
+    private Integer ecocoinBalance = 0; // EcoCoin balance for the user
 }

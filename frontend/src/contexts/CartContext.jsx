@@ -233,19 +233,47 @@ export const CartProvider = ({ children }) => {
 
   const applyCoupon = (couponCode) => {
     const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-    const coupon = coupons.find(c => c.code.toLowerCase() === couponCode.toLowerCase() && !c.used);
-
-    if (!coupon) {
-      return { success: false, message: 'Invalid or used coupon code.' };
+    
+    // First check local coupons
+    const localCoupon = coupons.find(c => c.code.toLowerCase() === couponCode.toLowerCase() && !c.used);
+    
+    if (localCoupon) {
+      // Handle local coupon
+      if (localCoupon.type === 'fixed' && subtotal < 300) {
+        return { success: false, message: 'A minimum spend of ₹300 is required to use this coupon.' };
+      }
+      setAppliedCoupon(localCoupon);
+      return { success: true, message: 'Coupon applied successfully!' };
     }
-
-    // Check for minimum spend on fixed-amount coupons
-    if (coupon.type === 'fixed' && subtotal < 300) {
-      return { success: false, message: 'A minimum spend of ₹300 is required to use this coupon.' };
+    
+    // If not found locally, check if it's a backend-generated coupon pattern
+    if (couponCode.startsWith('ECO50-') || couponCode.startsWith('ECO150-') || couponCode === 'FLAT50') {
+      // Create a temporary coupon object for backend-generated coupons
+      let discount = 50; // default
+      if (couponCode.startsWith('ECO150-')) {
+        discount = 150;
+      } else if (couponCode === 'FLAT50') {
+        discount = 50;
+      }
+      
+      const backendCoupon = {
+        code: couponCode,
+        type: 'fixed',
+        discount: discount,
+        description: `₹${discount} off coupon`,
+        used: false
+      };
+      
+      // Check minimum spend for fixed-amount coupons
+      if (subtotal < 300) {
+        return { success: false, message: 'A minimum spend of ₹300 is required to use this coupon.' };
+      }
+      
+      setAppliedCoupon(backendCoupon);
+      return { success: true, message: 'Coupon applied successfully!' };
     }
-
-    setAppliedCoupon(coupon);
-    return { success: true, message: 'Coupon applied successfully!' };
+    
+    return { success: false, message: 'Invalid or used coupon code.' };
   };
 
   const removeCoupon = () => {
