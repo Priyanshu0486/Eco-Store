@@ -2,6 +2,7 @@ package com.Ecostore.Backend.service;
 
 import com.Ecostore.Backend.dto.LoginRequest;
 import com.Ecostore.Backend.dto.SignUpRequest;
+import com.Ecostore.Backend.dto.UserUpdateRequest;
 import com.Ecostore.Backend.model.Role;
 import com.Ecostore.Backend.model.User;
 import com.Ecostore.Backend.repository.UserRepository;
@@ -62,5 +63,23 @@ public class UserService {
 
     public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
+    }
+
+    public User updateUserProfile(Long userId, UserUpdateRequest updateRequest) {
+        User user = findUserById(userId);
+
+        if (updateRequest.getUsername() != null && !updateRequest.getUsername().trim().isEmpty()) {
+            // Check if the new username is different and if it's already taken
+            if (!user.getUsername().equals(updateRequest.getUsername()) && userRepository.existsByUsername(updateRequest.getUsername())) {
+                throw new RuntimeException("Error: Username is already taken!");
+            }
+            user.setUsername(updateRequest.getUsername());
+        }
+
+        if (updateRequest.getPhoneNumber() != null && !updateRequest.getPhoneNumber().trim().isEmpty()) {
+            user.setPhoneNumber(updateRequest.getPhoneNumber());
+        }
+
+        return userRepository.save(user);
     }
 }

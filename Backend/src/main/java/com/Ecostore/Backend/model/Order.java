@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,11 +27,14 @@ public class Order {
     private List<OrderItem> orderItems = new ArrayList<>();
     private LocalDateTime orderDate;
     private LocalDateTime deliveryDate;
-    private Double totalPrice; // The sub-total before discount
+    @Column(precision = 10, scale = 2)
+    private BigDecimal totalPrice; // The sub-total before discount
 
-    private Double discount; // The discount amount applied
+    @Column(precision = 10, scale = 2)
+    private BigDecimal discount; // The discount amount applied
 
-    private Double finalPrice; // The final price after discount
+    @Column(precision = 10, scale = 2)
+    private BigDecimal finalPrice; // The final price after discount
 
     private String orderStatus; // e.g., PENDING, PLACED, SHIPPED, DELIVERED
     private String shippingAddress;

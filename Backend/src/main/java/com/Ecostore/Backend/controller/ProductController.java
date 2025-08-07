@@ -5,6 +5,7 @@ import com.Ecostore.Backend.model.Product;
 import com.Ecostore.Backend.service.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,26 +24,26 @@ public class ProductController {
         return productService.getAllProducts(category);
     }
     @PostMapping
-    // @PreAuthorize("hasRole('ADMIN')") // We will uncomment this later for security
+     @PreAuthorize("hasRole('ADMIN')") // We will uncomment this later for security
     public Product createProduct(@RequestBody ProductRequest productRequest) {
         return productService.createProduct(productRequest);
     }
 
     @PutMapping("/{id}")
-    // @PreAuthorize("hasRole('ADMIN')") // We will uncomment this later for security
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody ProductRequest productRequest) {
+     @PreAuthorize("hasRole('ADMIN')") // We will uncomment this later for security
+    public ResponseEntity<Product> updateProduct(@PathVariable String id, @RequestBody ProductRequest productRequest) {
         Product updatedProduct = productService.updateProduct(id, productRequest);
         return ResponseEntity.ok(updatedProduct);
     }
 
     @DeleteMapping("/{id}")
-    // @PreAuthorize("hasRole('ADMIN')") // We will uncomment this later for security
-    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+     @PreAuthorize("hasRole('ADMIN')") // We will uncomment this later for security
+    public ResponseEntity<?> deleteProduct(@PathVariable String id) {
         productService.deleteProduct(id);
         return ResponseEntity.ok().build();
     }
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id){
+    public ResponseEntity<Product> getProductById(@PathVariable String id){
         Product product = productService.getProductById(id);
         if(product != null){
             return new ResponseEntity<>(product, HttpStatus.OK);
