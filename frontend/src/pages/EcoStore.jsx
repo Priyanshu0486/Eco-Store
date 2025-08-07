@@ -18,7 +18,7 @@ import { IconButton } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ProductCard from '../components/ProductCard';
 import { useCart } from '../contexts/CartContext';
-import { fetchProducts } from '../utils/api'; // Use the API function
+import { fetchProducts, searchProducts } from '../utils/api'; // Use the API functions
 
 // Product categories for filtering
 const categories = [
@@ -41,26 +41,38 @@ function EcoStore() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [isSearchMode, setIsSearchMode] = useState(false); // Track if we're in search mode
   
   const { addToCart } = useCart();
 
   // Fetch products from the backend when the component mounts or category changes
   useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchProducts(selectedCategory);
-        setProducts(data);
-        setError(null);
-      } catch (err) {
-        setError('Failed to load products. Please try again later.');
-        console.error('Fetch Products Error:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadProducts();
-  }, [selectedCategory]);
+    // Only load products by category if we're not in search mode
+    if (!isSearchMode) {
+      const loadProducts = async () => {
+        try {
+          setLoading(true);
+          const data = await fetchProducts(selectedCategory);
+          setProducts(data);
+          setError(null);
+        } catch (err) {
+          setError('Failed to load products. Please try again later.');
+          console.error('Fetch Products Error:', err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadProducts();
+    }
+  }, [selectedCategory, isSearchMode]);
+
+  // Handle category change - exit search mode and clear search term
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+    setIsSearchMode(false);
+    setSearchTerm('');
+    setAnchorEl(null);
+  };
 
   const handleAddToCart = (product) => {
     try {
@@ -80,11 +92,37 @@ function EcoStore() {
     setSnackbarOpen(false);
   };
 
-  // Filter products based on search term (category filtering is now done by the backend)
-  const filteredProducts = products.filter(product => 
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // Handle search functionality
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) {
+      // If search term is empty, go back to category view
+      setIsSearchMode(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const searchResults = await searchProducts(searchTerm.trim());
+      setProducts(searchResults);
+      setIsSearchMode(true);
+    } catch (err) {
+      setError('Failed to search products. Please try again.');
+      console.error('Search Error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle Enter key press in search input
+  const handleSearchKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  // Products are now filtered by the backend, so we use them directly
+  const displayProducts = products;
 
   return (
     <Box sx={{background: 'radial-gradient(circle at top left, #e0f7fa 0%, #e8f5e9 40%, #fffde7 100%)', py: 4}}>
@@ -137,14 +175,13 @@ function EcoStore() {
                 placeholder="Search eco-friendly products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyPress={handleSearchKeyPress}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
                       <IconButton 
                         size="small" 
-                        onClick={() => {
-                          console.log('Search clicked:', searchTerm);
-                        }}
+                        onClick={handleSearch}
                         sx={{ p: 0.5 }}
                       >
                         🔍
@@ -200,10 +237,7 @@ function EcoStore() {
                   <MenuItem 
                     key={category} 
                     selected={category === selectedCategory}
-                    onClick={() => {
-                      setSelectedCategory(category);
-                      setAnchorEl(null);
-                    }}
+                    onClick={() => handleCategoryChange(category)}
                   >
                     {category}
                   </MenuItem>
@@ -213,7 +247,7 @@ function EcoStore() {
           </Box>
           
           <Typography variant="subtitle2" color="text.secondary">
-            {filteredProducts.length} products found
+            {displayProducts.length} products found {isSearchMode ? `for "${searchTerm}"` : ''}
           </Typography>
         </Box>
         
@@ -225,7 +259,7 @@ function EcoStore() {
           <Box sx={{ textAlign: 'center', my: 8 }}>
             <Typography color="error">{error}</Typography>
           </Box>
-        ) : filteredProducts.length === 0 ? (
+        ) : displayProducts.length === 0 ? (
           <Box sx={{ 
             textAlign: 'center', 
             my: 8,
@@ -235,9 +269,9 @@ function EcoStore() {
             boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
           }}>
             <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
-              No products found. Try adjusting your search or filters.
+              {isSearchMode ? 'No products found for your search.' : 'No products found. Try adjusting your filters.'}
             </Typography>
-            {searchTerm && (
+            {isSearchMode && (
               <Typography variant="body1" color="text.secondary">
                 No results for "{searchTerm}"
               </Typography>
@@ -262,7 +296,7 @@ function EcoStore() {
               justifyContent: 'center'
             }
           }}>
-            {filteredProducts.map((product) => (
+            {displayProducts.map((product) => (
               <Box key={product.id} sx={{
                 width: '100%',
                 maxWidth: '280px',

@@ -66,6 +66,16 @@ export const fetchProducts = async (category) => {
   }
 };
 
+export const searchProducts = async (query) => {
+  try {
+    const res = await api.get('/api/products/search', { params: { query } });
+    return res.data;
+  } catch (error) {
+    console.error('Error searching products:', error);
+    throw error;
+  }
+};
+
 // --- Admin Product Management API Calls ---
 
 export const adminGetProducts = async () => {
