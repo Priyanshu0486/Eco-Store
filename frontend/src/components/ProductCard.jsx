@@ -23,32 +23,6 @@ function ProductCard({ product }) {
   const { addToCart } = useCart();
   const ecoCoinsToEarn = calculateEcoCoins(product.price);
 
-  // Rating state loaded from localStorage or product props
-  const [ratingData, setRatingData] = useState(() => {
-    const stored = JSON.parse(localStorage.getItem('productRatings') || '{}');
-    return stored[product.id] || { rating: product.rating || 0, numRatings: product.numRatings || 0 };
-  });
-
-  // Track the rating given by the current user
-  const [userRating, setUserRating] = useState(() => {
-    const stored = JSON.parse(localStorage.getItem('userProductRatings') || '{}');
-    return stored[product.id] || 0;
-  });
-
-  // Persist whenever ratingData changes
-  useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('productRatings') || '{}');
-    stored[product.id] = ratingData;
-    localStorage.setItem('productRatings', JSON.stringify(stored));
-  }, [ratingData, product.id]);
-
-  // Persist user rating
-  useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('userProductRatings') || '{}');
-    stored[product.id] = userRating;
-    localStorage.setItem('userProductRatings', JSON.stringify(stored));
-  }, [userRating, product.id]);
-
   const handleAddToCart = (e) => {
     e.preventDefault(); // Prevent link navigation
     e.stopPropagation(); // Stop event from bubbling to the card link
@@ -126,6 +100,9 @@ function ProductCard({ product }) {
           justifyContent: 'space-between'
         }}>
           <Box>
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>
+              {product.brand}
+            </Typography>
             <Typography 
               variant="subtitle1" 
               component="div" 
@@ -158,27 +135,19 @@ function ProductCard({ product }) {
             </Box>
           </Box>
           <Box>
-            {/* Rating and reviews */}
+            {/* Rating and reviews from backend */}
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
               <Rating
-                value={ratingData.rating}
+                value={product.rating || 0}
                 precision={0.5}
                 size="small"
-                onChange={(_, newValue) => {
-                  if (!newValue) return;
-                  setUserRating(newValue);
-                  setRatingData(prev => {
-                    const total = prev.rating * prev.numRatings + newValue;
-                    const newCount = prev.numRatings + 1;
-                    return { rating: +(total / newCount).toFixed(1), numRatings: newCount };
-                  });
-                }}
+                readOnly
               />
               <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
-                {ratingData.rating.toFixed(1)}
+                {(product.rating || 0).toFixed(1)}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                ({ratingData.numRatings.toLocaleString()})
+                ({(product.totalReviewCount || 0).toLocaleString()})
               </Typography>
             </Box>
             <Typography variant="h6" color="primary" sx={{ fontWeight: 700, my: 1 }}>

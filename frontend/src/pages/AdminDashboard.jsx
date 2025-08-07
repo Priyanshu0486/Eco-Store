@@ -44,6 +44,7 @@ function AdminDashboard() {
   const [isEditing, setIsEditing] = useState(false);
   const [currentProduct, setCurrentProduct] = useState({
     name: '',
+    brand: '',
     description: '',
     price: '',
     category: '',
@@ -108,8 +109,14 @@ function AdminDashboard() {
   const resetForm = () => {
     setIsEditing(false);
     setCurrentProduct({
-      name: '', description: '', price: '', category: '', imageUrl: '',
-      carbonSaved: '', quantity: ''
+      name: '',
+      brand: '',
+      description: '',
+      price: '',
+      category: '',
+      imageUrl: '',
+      carbonSaved: '',
+      quantity: ''
     });
   };
 
@@ -174,7 +181,8 @@ function AdminDashboard() {
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>{isEditing ? 'Edit Product' : 'Add New Product'}</Typography>
             <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-              <TextField margin="normal" required fullWidth label="Name" name="name" value={currentProduct.name} onChange={handleInputChange} />
+                      <TextField margin="normal" required fullWidth label="Name" name="name" value={currentProduct.name} onChange={handleInputChange} />
+              <TextField margin="normal" required fullWidth label="Brand" name="brand" value={currentProduct.brand} onChange={handleInputChange} />
               <TextField margin="normal" required fullWidth label="Description" name="description" value={currentProduct.description} onChange={handleInputChange} />
               <TextField margin="normal" required fullWidth label="Price" name="price" type="number" value={currentProduct.price} onChange={handleInputChange} />
               <FormControl margin="normal" required fullWidth>

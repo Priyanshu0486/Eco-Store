@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Entity
 @Data
 public class OrderItem {
@@ -21,5 +23,6 @@ public class OrderItem {
     private Product product;
 
     private int quantity;
-    private double price; // Price of the product at the time of order
+    @Column(precision = 10, scale = 2)
+    private BigDecimal price; // Price of the product at the time of order
 }
