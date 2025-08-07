@@ -22,8 +22,14 @@ public class DiscountCoupon {
     @Column(unique = true, nullable = false)
     private String code;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Double discountPercentage;
+    
+    @Column(nullable = true)
+    private Double discountAmount;
+    
+    @Column(nullable = false)
+    private String discountType; // "PERCENTAGE" or "FIXED"
 
     @Column(nullable = false)
     private LocalDate expiryDate;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Container, 
   Typography, 
@@ -13,18 +13,114 @@ import {
   ListItemText,
   Divider,
   Alert,
-  CardActions
+  CardActions,
+  CircularProgress,
+  Snackbar,
+  IconButton,
+  Chip,
+  TextField
 } from '@mui/material';
-import { useCart } from '../contexts/CartContext';
+import { ContentCopy as CopyIcon } from '@mui/icons-material';
+import { fetchEcoCoinBalance, redeemEcoCoins } from '../utils/api';
 import { redemptionOptions } from '../utils/ecoProducts';
 
 function Wallet() {
-  const { ecoCoins, redeemEcoCoins, redemptionHistory } = useCart();
+  // State management
+  const [ecoCoins, setEcoCoins] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [redeeming, setRedeeming] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [redemptionHistory, setRedemptionHistory] = useState(() => {
+    try {
+      const savedHistory = localStorage.getItem('redemptionHistory');
+      return savedHistory ? JSON.parse(savedHistory) : [];
+    } catch (error) {
+      console.error('Could not load redemption history from localStorage', error);
+      return [];
+    }
+  });
+
+  // Fetch EcoCoin balance on component mount
+  useEffect(() => {
+    loadEcoCoinBalance();
+  }, []);
+
+  // Persist redemption history to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('redemptionHistory', JSON.stringify(redemptionHistory));
+    } catch (error) {
+      console.error('Could not save redemption history to localStorage', error);
+    }
+  }, [redemptionHistory]);
+
+  const loadEcoCoinBalance = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const balance = await fetchEcoCoinBalance();
+      setEcoCoins(balance);
+    } catch (err) {
+      console.error('Error loading EcoCoin balance:', err);
+      setError('Failed to load EcoCoin balance. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Handle reward redemption
-  const handleRedeem = (option) => {
-    const result = redeemEcoCoins(option);
-    alert(result.message);
+  const handleRedeem = async (option) => {
+    if (ecoCoins < option.coins) {
+      setError(`Insufficient EcoCoins. You need ${option.coins} but have ${ecoCoins}.`);
+      return;
+    }
+
+    try {
+      setRedeeming(true);
+      setError(null);
+      
+      const result = await redeemEcoCoins(option.coins);
+      
+      // Update local balance
+      setEcoCoins(result.newBalance);
+      
+      // Add to redemption history
+      const newRedemption = {
+        id: Date.now(),
+        label: option.label,
+        coins: option.coins,
+        date: new Date().toISOString(),
+        discountAmount: result.discountAmount,
+        couponCode: result.couponCode
+      };
+      setRedemptionHistory(prev => [newRedemption, ...prev]);
+      
+      setSuccessMessage(`Successfully redeemed ${option.coins} EcoCoins! Your coupon code: ${result.couponCode}`);
+      
+    } catch (err) {
+      console.error('Error redeeming EcoCoins:', err);
+      setError(err.message || 'Failed to redeem EcoCoins. Please try again.');
+    } finally {
+      setRedeeming(false);
+    }
+  };
+
+  // Close snackbar messages
+  const handleCloseSnackbar = () => {
+    setError(null);
+    setSuccessMessage('');
+  };
+  
+  // Copy coupon code to clipboard
+  const handleCopyCoupon = async (couponCode) => {
+    try {
+      await navigator.clipboard.writeText(couponCode);
+      setSuccessMessage(`Coupon code ${couponCode} copied to clipboard!`);
+    } catch (err) {
+      console.error('Failed to copy coupon code:', err);
+      setError('Failed to copy coupon code. Please copy manually.');
+    }
   };
   
   return (
@@ -58,9 +154,32 @@ function Wallet() {
           <Typography variant="h5" component="div" sx={{ mb: 1 }}>
             Current EcoCoins Balance
           </Typography>
-          <Typography variant="h2" component="div" sx={{ fontWeight: 'bold' }}>
-            {ecoCoins} 🌿
-          </Typography>
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80px' }}>
+              <CircularProgress sx={{ color: 'white' }} />
+            </Box>
+          ) : (
+            <Typography variant="h2" component="div" sx={{ fontWeight: 'bold' }}>
+              {ecoCoins} 🌿
+            </Typography>
+          )}
+          {!loading && (
+            <Button 
+              variant="outlined" 
+              onClick={loadEcoCoinBalance}
+              sx={{ 
+                mt: 2, 
+                color: 'white', 
+                borderColor: 'white',
+                '&:hover': {
+                  borderColor: 'rgba(255,255,255,0.8)',
+                  backgroundColor: 'rgba(255,255,255,0.1)'
+                }
+              }}
+            >
+              Refresh Balance
+            </Button>
+          )}
         </Paper>
         
         {/* Redemption Options */}
@@ -142,10 +261,11 @@ function Wallet() {
                       }
                     }}
                     fullWidth
-                    disabled={ecoCoins < option.coins}
+                    disabled={loading || redeeming || ecoCoins < option.coins}
                     onClick={() => handleRedeem(option)}
+                    startIcon={redeeming ? <CircularProgress size={20} sx={{ color: 'white' }} /> : null}
                   >
-                    Redeem
+                    {redeeming ? 'Redeeming...' : 'Redeem'}
                   </Button>
                 </CardContent>
               </Card>
@@ -167,9 +287,37 @@ function Wallet() {
                   <ListItem>
                     <ListItemText
                       primary={`Redeemed: ${item.label}`}
-                      secondary={`On ${new Date(item.date).toLocaleDateString()}`}
+                      secondary={
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
+                            {new Date(item.date).toLocaleDateString()}
+                          </Typography>
+                          {item.discountAmount && (
+                            <Typography variant="body2" color="success.main">
+                              Discount: ₹{item.discountAmount}
+                            </Typography>
+                          )}
+                          {item.couponCode && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                              <Chip 
+                                label={item.couponCode} 
+                                size="small" 
+                                color="primary" 
+                                variant="outlined"
+                              />
+                              <IconButton 
+                                size="small" 
+                                onClick={() => handleCopyCoupon(item.couponCode)}
+                                sx={{ p: 0.5 }}
+                              >
+                                <CopyIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          )}
+                        </Box>
+                      }
                     />
-                    <Typography variant="body1" color="error">
+                    <Typography variant="body1" color="error" sx={{ fontWeight: 'bold' }}>
                       -{item.coins} EcoCoins
                     </Typography>
                   </ListItem>
@@ -183,6 +331,29 @@ function Wallet() {
             </Typography>
           )}
         </Paper>
+        
+        {/* Error and Success Messages */}
+        <Snackbar
+          open={!!error}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
+            {error}
+          </Alert>
+        </Snackbar>
+        
+        <Snackbar
+          open={!!successMessage}
+          autoHideDuration={4000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
+            {successMessage}
+          </Alert>
+        </Snackbar>
       </Container>
     </Box>
   );

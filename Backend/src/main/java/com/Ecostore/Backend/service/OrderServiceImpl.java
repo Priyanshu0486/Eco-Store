@@ -33,6 +33,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final DiscountCouponRepository discountCouponRepository;
+    private final EcoCoinService ecoCoinService;
 
     @Value("${razorpay.key.id}")
     private String razorpayKeyId;
@@ -41,10 +42,11 @@ public class OrderServiceImpl implements OrderService {
     private String razorpayKeySecret;
 
     @Autowired
-    public OrderServiceImpl(OrderRepository orderRepository, ProductRepository productRepository, DiscountCouponRepository discountCouponRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository, ProductRepository productRepository, DiscountCouponRepository discountCouponRepository, EcoCoinService ecoCoinService) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.discountCouponRepository = discountCouponRepository;
+        this.ecoCoinService = ecoCoinService;
     }
 
     @Override
@@ -110,14 +112,24 @@ public class OrderServiceImpl implements OrderService {
                 if (coupon.getExpiryDate().isBefore(LocalDate.now())) {
                     throw new IllegalArgumentException("Coupon code has expired.");
                 }
+                if (!coupon.isActive()) {
+                    throw new IllegalArgumentException("Coupon code is not active.");
+                }
 
-                // Logic for fixed-amount coupons
-                if ("FLAT50".equals(code)) {
-                    discount = new BigDecimal("50.00");
-                } else if (code.startsWith("ECO150-")) {
-                    discount = new BigDecimal("150.00");
+                // Use coupon data from database
+                if ("FIXED".equals(coupon.getDiscountType())) {
+                    discount = new BigDecimal(coupon.getDiscountAmount().toString());
+                } else if ("PERCENTAGE".equals(coupon.getDiscountType())) {
+                    discount = totalPrice.multiply(new BigDecimal(coupon.getDiscountPercentage().toString())).divide(new BigDecimal("100"));
                 } else {
-                    // You can add logic for other coupon types, like percentage-based, here
+                    // Fallback for legacy coupons without discountType
+                    if ("FLAT50".equals(code)) {
+                        discount = new BigDecimal("50.00");
+                    } else if (code.startsWith("ECO50-")) {
+                        discount = new BigDecimal("50.00");
+                    } else if (code.startsWith("ECO150-")) {
+                        discount = new BigDecimal("150.00");
+                    }
                 }
 
                 // The discount cannot be more than the total price
@@ -125,9 +137,8 @@ public class OrderServiceImpl implements OrderService {
                     discount = totalPrice;
                 }
             } else {
-                // If you want to strictly enforce that all coupon codes must exist in the DB,
-                // you can uncomment the following line.
-                // throw new IllegalArgumentException("Invalid coupon code.");
+                // Coupon code not found in database
+                throw new IllegalArgumentException("Invalid coupon code.");
             }
         }
 
@@ -138,7 +149,21 @@ public class OrderServiceImpl implements OrderService {
         order.setDiscount(discount);
         order.setFinalPrice(finalPrice);
 
-        return orderRepository.save(order);
+        // Save the order first
+        Order savedOrder = orderRepository.save(order);
+        
+        // Award EcoCoins for successful order (only for completed payments)
+        if ("COMPLETED".equals(savedOrder.getPaymentStatus())) {
+            try {
+                Integer ecoCoinsEarned = ecoCoinService.processEcoCoinEarning(user.getId(), finalPrice);
+                System.out.println("EcoCoins awarded: " + ecoCoinsEarned + " for order: " + savedOrder.getId());
+            } catch (Exception e) {
+                System.err.println("Failed to award EcoCoins for order " + savedOrder.getId() + ": " + e.getMessage());
+                // Don't fail the order creation if EcoCoin awarding fails
+            }
+        }
+        
+        return savedOrder;
     }
 
     private boolean verifyPaymentSignature(CreateOrderRequest req) throws RazorpayException {
@@ -224,8 +249,20 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setPaymentStatus("COMPLETED");
-
-        return orderRepository.save(order);
+        
+        // Save the order first
+        Order savedOrder = orderRepository.save(order);
+        
+        // Award EcoCoins for COD payment completion
+        try {
+            Integer ecoCoinsEarned = ecoCoinService.processEcoCoinEarning(order.getUser().getId(), order.getFinalPrice());
+            System.out.println("EcoCoins awarded for COD payment: " + ecoCoinsEarned + " for order: " + savedOrder.getId());
+        } catch (Exception e) {
+            System.err.println("Failed to award EcoCoins for COD order " + savedOrder.getId() + ": " + e.getMessage());
+            // Don't fail the payment completion if EcoCoin awarding fails
+        }
+        
+        return savedOrder;
     }
 
     @Override

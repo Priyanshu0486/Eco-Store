@@ -48,7 +48,7 @@ function Login({ setUser }) {
     }
     try {
       const response = await loginUser({ email, password });
-      localStorage.setItem('ecoToken', response.token);
+      localStorage.setItem('jwt', response.token);
       const userData = {
         id: response.id,
         username: response.username,
@@ -77,7 +77,7 @@ function Login({ setUser }) {
     // Directly call the login logic
     try {
       const response = await loginUser({ email: adminEmail, password: adminPassword });
-      localStorage.setItem('ecoToken', response.token);
+      localStorage.setItem('jwt', response.token);
       const userData = {
         id: response.id,
         username: response.username,

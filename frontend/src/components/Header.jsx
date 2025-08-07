@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import logo from "../pages/logo.png";
 import { 
@@ -31,6 +31,7 @@ import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
 import { useCart } from '../contexts/CartContext';
 import { green } from '@mui/material/colors';
+import { fetchEcoCoinBalance } from '../utils/api';
 
 // AccountMenu Component
 function AccountMenu({ onLogout, navigate }) {
@@ -120,14 +121,38 @@ function AccountMenu({ onLogout, navigate }) {
 function Header({ user, onLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { ecoCoins, cart } = useCart();
+  const { cart } = useCart();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [ecoCoins, setEcoCoins] = useState(0);
+  const [loadingBalance, setLoadingBalance] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
+
+  // Fetch EcoCoin balance when user is logged in
+  useEffect(() => {
+    const loadEcoCoinBalance = async () => {
+      if (user?.loggedIn && localStorage.getItem('jwt')) {
+        try {
+          setLoadingBalance(true);
+          const balance = await fetchEcoCoinBalance();
+          setEcoCoins(balance);
+        } catch (error) {
+          console.error('Failed to fetch EcoCoin balance:', error);
+          setEcoCoins(0);
+        } finally {
+          setLoadingBalance(false);
+        }
+      } else {
+        setEcoCoins(0);
+      }
+    };
+
+    loadEcoCoinBalance();
+  }, [user?.loggedIn]);
 
   const menuItems = [
     { text: 'Store', path: '/eco-store' },
@@ -318,8 +343,9 @@ function Header({ user, onLogout }) {
                       component={Link}
                       to="/wallet"
                       sx={{ mr: 2, borderRadius: '12px', color: 'white' }}
+                      disabled={loadingBalance}
                     >
-                      🌿{ecoCoins} EcoCoins
+                      🌿{loadingBalance ? '...' : ecoCoins} EcoCoins
                     </Button>
                     <AccountMenu onLogout={onLogout} navigate={navigate} />
                   </>
