@@ -14,7 +14,7 @@ import {
   Menu,
   MenuItem
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
+import { IconButton } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ProductCard from '../components/ProductCard';
 import { useCart } from '../contexts/CartContext';
@@ -24,7 +24,7 @@ import { fetchProducts } from '../utils/api'; // Use the API function
 const categories = [
   'All',
   'Home',
-  'Personal Care',
+  'Beauty',
   'Fashion',
   'Electronics',
   'Kitchen',
@@ -140,7 +140,15 @@ function EcoStore() {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchIcon color="action" />
+                      <IconButton 
+                        size="small" 
+                        onClick={() => {
+                          console.log('Search clicked:', searchTerm);
+                        }}
+                        sx={{ p: 0.5 }}
+                      >
+                        🔍
+                      </IconButton>
                     </InputAdornment>
                   ),
                   sx: {
