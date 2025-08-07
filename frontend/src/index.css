@@ -13,7 +13,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f9fafb;
+  /* Radiant gradient background */
+  background: radial-gradient(circle at top left, #e0f7fa 0%, #e8f5e9 40%, #fffde7 100%);
 }
 
 .eco-gradient-text {

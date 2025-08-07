@@ -62,11 +62,11 @@ function Footer() {
   return (
     <Box 
       component="footer" 
-      sx={{ 
-        bgcolor: 'background.paper',
+      sx={{
         py: 2, // Reduced vertical padding
         borderTop: '1px solid',
-        borderColor: 'divider'
+        borderColor: 'divider',
+        background: 'radial-gradient(circle at top left,rgb(107, 219, 234) 10%,rgb(176, 237, 182) 40%,rgb(241, 237, 195) 100%)',
       }}
     >
       <Container maxWidth="lg">
@@ -86,7 +86,7 @@ function Footer() {
                 mb: 2
               }}
             >
-              ECO-STORE
+              ECOSTORE
             </Typography>
             <Typography 
               variant="body2" 

@@ -56,7 +56,7 @@ function ProductCard({ product }) {
           transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
           '&:hover': {
             transform: 'translateY(-5px)',
-            boxShadow: '0 12px 20px rgba(0,0,0,0.12)'
+            boxShadow: '50px 20px 30px rgba(0, 0, 0, 0.12)'
           },
           '&:hover .product-image': {
             transform: 'scale(1.05)'

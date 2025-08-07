@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import logo from "../pages/logo.png";
 import { 
   AppBar, 
   Toolbar, 
@@ -21,7 +22,6 @@ import {
   MenuItem,
   ListItemIcon,
   Tooltip,
-  rgbToHex
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -119,6 +119,7 @@ function AccountMenu({ onLogout, navigate }) {
 
 function Header({ user, onLogout }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { ecoCoins, cart } = useCart();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -138,16 +139,35 @@ function Header({ user, onLogout }) {
   const drawerContent = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
       <Typography variant="h6" sx={{ my: 2 }}>
-        Eco-Store
+        EcoStore
       </Typography>
       <Divider />
       {user?.loggedIn ? (
         <List>
-          {menuItems.map((item) => (
-            <ListItem button component={Link} to={item.path} key={item.text}>
-              <ListItemText primary={item.text} />
-            </ListItem>
-          ))}
+          {menuItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <ListItem 
+                button 
+                component={Link} 
+                to={item.path} 
+                key={item.text}
+                sx={{
+                  backgroundColor: isActive ? 'rgba(0, 100, 0, 0.1)' : 'transparent',
+                  borderLeft: isActive ? `4px solid ${green[500]}` : 'none',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 100, 0, 0.05)',
+                  },
+                  '& .MuiListItemText-primary': {
+                    fontWeight: isActive ? 'bold' : 'normal',
+                    color: isActive ? green[600] : 'inherit',
+                  }
+                }}
+              >
+                <ListItemText primary={item.text} />
+              </ListItem>
+            );
+          })}
           <ListItem button onClick={onLogout}>
             <ListItemText primary="Logout" />
           </ListItem>
@@ -189,7 +209,7 @@ function Header({ user, onLogout }) {
                 flexGrow: 1
               }}
             >
-              ECO-STORE
+              EcoStore
             </Typography>
             <Button color="inherit" onClick={onLogout}>
               Logout
@@ -213,21 +233,29 @@ function Header({ user, onLogout }) {
     >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <Typography
-            variant="h6"
-            component={Link}
-            to="/"
-            sx={{
-              mr: 2,
-              fontWeight: 700,
-              letterSpacing: '.2rem',
-              color: 'primary.main',
-              textDecoration: 'none',
-              flexGrow: { xs: 1, md: 0 }
-            }}
-          >
-            ECO-STORE
-          </Typography>
+          <Box component={Link} to="/" sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexGrow: { xs: 1, md: 0 } }}>
+            <img 
+              src= {logo}
+              alt="EcoStore Logo" 
+              style={{
+                height: '70px',
+                marginRight: '5px',
+                objectFit: 'contain'
+              }}
+            />
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                letterSpacing: '.2rem',
+                color: 'primary.main',
+                textDecoration: 'none',
+                display: { xs: 'none', sm: 'block' } // Hide text on extra small screens
+              }}
+            >
+              ECOSTORE
+            </Typography>
+          </Box>
 
           {isMobile ? (
             <IconButton
@@ -241,16 +269,39 @@ function Header({ user, onLogout }) {
           ) : (
             <>
               <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, justifyContent: 'center' }}>
-                {user?.loggedIn && menuItems.map((item) => (
-                  <Button
-                    key={item.text}
-                    component={Link}
-                    to={item.path}
-                    sx={{ my: 2, color: 'text.primary', display: 'block', mx: 2 }}
-                  >
-                    {item.text}
-                  </Button>
-                ))}
+                {user?.loggedIn && menuItems.map((item) => {
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <Button
+                      key={item.text}
+                      component={Link}
+                      to={item.path}
+                      sx={{
+                        my: 2,
+                        color: isActive ? 'primary.main' : 'text.primary',
+                        fontWeight: isActive ? 'bold' : 'normal',
+                        display: 'block',
+                        mx: 5,
+                        position: 'relative',
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '4px',
+                          backgroundColor: 'primary.main',
+                          transformOrigin: 'left center',
+                          transform: isActive ? 'scaleX(1)' : 'scaleX(0)',
+                          transition: 'transform 0.3s ease-in-out',
+                          borderRadius: '2px',
+                        },
+                      }}
+                    >
+                      {item.text}
+                    </Button>
+                  );
+                })}
               </Box>
 
               <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
@@ -274,7 +325,7 @@ function Header({ user, onLogout }) {
                   </>
                 ) : (
                   <Button component={Link} to="/login" variant="contained" color="primary">
-                    Get Started
+                    Explore more!!
                   </Button>
                 )}
               </Box>
