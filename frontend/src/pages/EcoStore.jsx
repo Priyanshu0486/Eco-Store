@@ -170,7 +170,7 @@ function EcoStore() {
             </Box>
 
             {/* Filter Button and Menu */}
-            <Box sx={{ 
+            <Box sx={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -184,6 +184,18 @@ function EcoStore() {
                 variant="outlined"
                 onClick={(event) => setAnchorEl(event.currentTarget)}
                 startIcon={<FilterListIcon />}
+                sx={{
+                  borderColor: '#4caf50',
+                  color: '#4caf50',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: "green",
+                    color: 'white',
+                    borderColor: '#4caf50',
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 4px 8px rgba(109, 173, 109, 0.3)'
+                  }
+                }}
               >
                 {selectedCategory === 'All' ? 'Filters' : selectedCategory}
               </Button>

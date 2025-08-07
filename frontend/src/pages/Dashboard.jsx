@@ -17,7 +17,9 @@ import {
   Chip,
   CircularProgress,
   Button,
-  ButtonGroup
+  Menu,
+  MenuItem,
+  IconButton
 } from '@mui/material';
 import SavingsIcon from '@mui/icons-material/Savings';
 import Co2Icon from '@mui/icons-material/Co2';
@@ -29,6 +31,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useCart } from '../contexts/CartContext';
 import { calculateEcoCoins } from '../utils/api';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 function Dashboard({ user }) {
   const theme = useTheme();
@@ -41,6 +44,8 @@ function Dashboard({ user }) {
   const [totalEcoCoins, setTotalEcoCoins] = useState(0);
   const [chartData, setChartData] = useState([]);
   const [timeRange, setTimeRange] = useState(30); // Default to 30 days
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedPeriod, setSelectedPeriod] = useState('Last month');
 
   useEffect(() => {
     // Process purchased items for display
@@ -244,10 +249,59 @@ function Dashboard({ user }) {
             <Typography variant="h6" fontWeight={600} color="primary.main">
               Your Impact Over Time
             </Typography>
-            <ButtonGroup variant="outlined" size="small">
-              <Button onClick={() => setTimeRange(7)} variant={timeRange === 7 ? 'contained' : 'outlined'}>7 Days</Button>
-              <Button onClick={() => setTimeRange(30)} variant={timeRange === 30 ? 'contained' : 'outlined'}>30 Days</Button>
-            </ButtonGroup>
+            <IconButton 
+              onClick={(event) => setAnchorEl(event.currentTarget)}
+              sx={{ 
+                fontSize: '40px',
+                '&:hover': {
+                  backgroundColor: 'rgba(164, 233, 164, 0.65)'
+                }
+              }}
+            >
+              <CalendarMonthIcon sx={{fontSize: '35px'}} />
+            </IconButton>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={() => setAnchorEl(null)}
+              MenuListProps={{
+                'aria-labelledby': 'calendar-button',
+              }}
+            >
+              <MenuItem 
+                selected={timeRange === 7}
+                onClick={() => {
+                  setTimeRange(7);
+                  setSelectedPeriod('Last 7 days');
+                  setAnchorEl(null);
+                }}
+                sx={{fontSize: '18px'}}
+              >
+                Last 7 days
+              </MenuItem>
+              <MenuItem 
+                selected={timeRange === 30}
+                onClick={() => {
+                  setTimeRange(30);
+                  setSelectedPeriod('Last month');
+                  setAnchorEl(null);
+                }}
+                sx={{fontSize: '18px'}}
+              >
+                Last month
+              </MenuItem>
+              <MenuItem 
+                selected={timeRange === 365}
+                onClick={() => {
+                  setTimeRange(365);
+                  setSelectedPeriod('Last year');
+                  setAnchorEl(null);
+                }}
+                sx={{fontSize: '18px'}}
+                >
+                Last year
+              </MenuItem>
+            </Menu>
           </Box>
           
           {chartData.length > 0 ? (

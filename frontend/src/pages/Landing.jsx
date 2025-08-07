@@ -622,7 +622,7 @@ function Landing() {
               },
               {
                 question: 'How do you calculate my environmental impact?',
-                answer: 'We calculate your environmental impact based on the products you purchase. Each product in our store has been assessed for its carbon footprint, water usage, and plastic waste reduction compared to conventional alternatives. Your dashboard tracks the cumulative positive impact of all your purchases.'
+                answer: 'We calculate your environmental impact based on the products you purchase. Each product in our store has been assessed for its carbon footprint compared to conventional alternatives. Your dashboard tracks the cumulative positive impact of all your purchases.'
               },
               {
                 question: 'Are all products on your platform 100% eco-friendly?',
