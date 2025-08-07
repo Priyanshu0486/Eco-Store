@@ -140,13 +140,14 @@ function ProductCard({ product }) {
               <Rating
                 value={product.rating || 0}
                 precision={0.5}
-                size="small"
+                size="large"
                 readOnly
+                max={1}
               />
-              <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
-                {(product.rating || 0).toFixed(1)}
+              <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600, fontSize: '18px' }}>
+                {(product.rating || 0).toFixed(1)}  
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '18px' }}>
                 ({(product.totalReviewCount || 0).toLocaleString()})
               </Typography>
             </Box>

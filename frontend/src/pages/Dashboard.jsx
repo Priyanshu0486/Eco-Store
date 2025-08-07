@@ -30,6 +30,7 @@ import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import { Link as RouterLink } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { calculateEcoCoins, fetchDashboardStats, fetchRecentOrders, fetchEcoCoinBalance } from '../utils/api';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 function Dashboard({ user }) {
   const theme = useTheme();
