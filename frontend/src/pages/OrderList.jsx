@@ -42,8 +42,8 @@ import {
 } from '../utils/api';
 
 // Status options for dropdowns
-const ORDER_STATUS_OPTIONS = ['PENDING', 'PLACED', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
-const PAYMENT_STATUS_OPTIONS = ['PENDING', 'PAID', 'FAILED', 'REFUNDED'];
+const ORDER_STATUS_OPTIONS = ['PLACED', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
+const PAYMENT_STATUS_OPTIONS = ['PENDING', 'COMPLETED', 'FAILED', 'REFUNDED'];
 
 function OrderList() {
   const [orders, setOrders] = useState([]);
@@ -71,7 +71,7 @@ function OrderList() {
         orderId: `ORD-${order.id}`,
         orderDate: order.orderDate,
         totalAmount: parseFloat(order.finalPrice || order.totalPrice || 0),
-        orderStatus: order.orderStatus || 'PENDING',
+        orderStatus: order.orderStatus || 'PLACED',
         paymentId: order.paymentId || 'N/A',
         paymentMethod: order.paymentMethod || 'N/A',
         paymentStatus: order.paymentStatus || 'PENDING',
@@ -158,9 +158,9 @@ function OrderList() {
     }
   };
 
-  // Check if order can be edited (only pending payment status orders)
+  // Check if order can be edited (admins can edit all orders)
   const canEditOrder = (order) => {
-    return order.paymentStatus === 'PENDING';
+    return true; // Admins can edit any order
   };
 
   const getStatusColor = (status) => {
@@ -176,7 +176,7 @@ function OrderList() {
 
   const getPaymentStatusColor = (status) => {
     switch (status.toLowerCase()) {
-      case 'paid': return 'success';
+      case 'completed': return 'success';
       case 'pending': return 'warning';
       case 'failed': return 'error';
       case 'refunded': return 'info';

@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import { useCart } from '../contexts/CartContext';
 import { getProductById } from '../utils/api';
+import ProductRecommendations from '../components/ProductRecommendations';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Co2Icon from '@mui/icons-material/Co2';
@@ -198,6 +199,9 @@ function ProductDetail() {
             </Grid>
           </Grid>
         </Paper>
+
+        {/* Product Recommendations Carousel */}
+        <ProductRecommendations productId={productId} />
       </Container>
     </Box>
   );

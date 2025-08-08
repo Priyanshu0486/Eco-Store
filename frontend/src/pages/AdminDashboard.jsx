@@ -26,7 +26,8 @@ import {
   adminGetProducts, 
   adminAddProduct, 
   adminUpdateProduct, 
-  adminDeleteProduct 
+  adminDeleteProduct,
+  adminGetDashboardStats 
 } from '../utils/api';
 
 const categories = [
@@ -41,6 +42,12 @@ const categories = [
 function AdminDashboard() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
+  const [dashboardStats, setDashboardStats] = useState({
+    totalUsers: 0,
+    totalOrders: 0,
+    totalProducts: 0,
+    totalSales: 0
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [currentProduct, setCurrentProduct] = useState({
     name: '',
@@ -55,6 +62,7 @@ function AdminDashboard() {
 
   useEffect(() => {
     loadProducts();
+    loadDashboardStats();
   }, []);
 
   const loadProducts = async () => {
@@ -63,6 +71,15 @@ function AdminDashboard() {
       setProducts(data);
     } catch (error) {
       console.error('Failed to fetch products:', error);
+    }
+  };
+
+  const loadDashboardStats = async () => {
+    try {
+      const stats = await adminGetDashboardStats();
+      setDashboardStats(stats);
+    } catch (error) {
+      console.error('Failed to fetch dashboard stats:', error);
     }
   };
 
@@ -140,16 +157,16 @@ function AdminDashboard() {
       {/* --- Statistics Section --- */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Total Sales" value="₹0.00" />
+          <StatCard title="Total Sales" value={`₹${dashboardStats.totalSales.toFixed(2)}`} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Total Users" value="0" />
+          <StatCard title="Total Users" value={dashboardStats.totalUsers} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Total Products" value={products.length} />
+          <StatCard title="Total Products" value={dashboardStats.totalProducts} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Total Orders" value="0" />
+          <StatCard title="Total Orders" value={dashboardStats.totalOrders} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <Button

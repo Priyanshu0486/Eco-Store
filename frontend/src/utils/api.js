@@ -175,6 +175,18 @@ export const adminUpdatePaymentStatus = async (orderId, paymentStatus) => {
   }
 };
 
+// --- Admin Dashboard API Calls ---
+
+export const adminGetDashboardStats = async () => {
+  try {
+    const res = await api.get('/api/admin/dashboard/stats');
+    return res.data;
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+    throw error;
+  }
+};
+
 export const getProductById = async (id) => {
   try {
     const res = await api.get(`/api/products/${id}`);
@@ -345,6 +357,18 @@ export const calculatePotentialEcoCoins = async (amount) => {
     return data.ecoCoinsEarned || 0;
   } catch (error) {
     console.error('Error calculating potential EcoCoins:', error);
+    throw error;
+  }
+};
+
+// --- Recommendation API Calls ---
+
+export const getProductRecommendations = async (productId) => {
+  try {
+    const res = await api.get(`/api/recommendations/${productId}`);
+    return res.data;
+  } catch (error) {
+    console.error('Error fetching product recommendations:', error);
     throw error;
   }
 };
