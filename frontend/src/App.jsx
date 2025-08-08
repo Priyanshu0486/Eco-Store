@@ -44,7 +44,7 @@ function AppContent() {
       flexDirection: 'column',
       minHeight: '100vh'
     }}>
-      {location.pathname !== '/login' && <Header user={user} onLogout={handleLogout} />}
+      {location.pathname !== '/login' && !location.pathname.startsWith('/admin') && <Header user={user} onLogout={handleLogout} />}
       <Box sx={{ flexGrow: 1 }}>
         <Routes>
           <Route path="/" element={<Landing />} />

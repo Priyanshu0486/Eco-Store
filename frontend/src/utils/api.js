@@ -143,6 +143,38 @@ export const createOrder = async (orderData) => {
   }
 };
 
+// --- Admin Order Management API Calls ---
+
+export const adminGetAllOrders = async () => {
+  try {
+    const res = await api.get('/api/admin/orders');
+    return res.data;
+  } catch (error) {
+    console.error('Error fetching all orders for admin:', error);
+    throw error;
+  }
+};
+
+export const adminUpdateOrderStatus = async (orderId, orderStatus) => {
+  try {
+    const res = await api.put(`/api/admin/orders/${orderId}/status`, { orderStatus });
+    return res.data;
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    throw error;
+  }
+};
+
+export const adminUpdatePaymentStatus = async (orderId, paymentStatus) => {
+  try {
+    const res = await api.put(`/api/admin/orders/${orderId}/payment-status`, { paymentStatus });
+    return res.data;
+  } catch (error) {
+    console.error('Error updating payment status:', error);
+    throw error;
+  }
+};
+
 export const getProductById = async (id) => {
   try {
     const res = await api.get(`/api/products/${id}`);

@@ -164,7 +164,7 @@ function Header({ user, onLogout }) {
   const drawerContent = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
       <Typography variant="h6" sx={{ my: 2 }}>
-        EcoStore
+        ECOSTORE
       </Typography>
       <Divider />
       {user?.loggedIn ? (
