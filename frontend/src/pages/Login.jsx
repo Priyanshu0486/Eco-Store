@@ -19,7 +19,7 @@ function Login({ setUser }) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [age, setAge] = useState('');
+
   const [phoneNumber, setPhoneNumber] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
 
@@ -103,12 +103,12 @@ function Login({ setUser }) {
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    if (!username || !email || !password || !age || !phoneNumber || !dateOfBirth) {
+    if (!username || !email || !password || !phoneNumber || !dateOfBirth) {
       return handleResponse('Please fill in all fields', true);
     }
     try {
       // HTML date input already returns YYYY-MM-DD format, no need to reverse
-      const signupData = { username, email, password, age: parseInt(age), phoneNumber, dateOfBirth };
+      const signupData = { username, email, password, phoneNumber, dateOfBirth };
       console.log('Sending signup data:', signupData);
       const response = await signupUser(signupData);
       handleResponse(response.message, false);
@@ -408,27 +408,7 @@ function Login({ setUser }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 InputLabelProps={{ shrink: true }}
-                sx={{
-                  '& .MuiInputLabel-root': { position: 'relative', transform: 'none', color: '#000', fontWeight: 'bold', fontSize: '1rem', mb: -1 },
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '25px',
-                    backgroundColor: '#fff',
-                    '& fieldset': { borderColor: '#000' },
-                    '&:hover fieldset': { borderColor: '#000' },
-                    '&.Mui-focused fieldset': { borderColor: '#000' },
-                  }
-                }}
-              />
-              <TextField
-                label="Age"
-                variant="outlined"
-                fullWidth
-                margin="dense"
-                type="number"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                InputLabelProps={{ shrink: true }}
-                sx={{
+                 sx={{
                   '& .MuiInputLabel-root': { position: 'relative', transform: 'none', color: '#000', fontWeight: 'bold', fontSize: '1rem', mb: -1 },
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '25px',

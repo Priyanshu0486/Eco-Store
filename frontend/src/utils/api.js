@@ -372,3 +372,35 @@ export const getProductRecommendations = async (productId) => {
     throw error;
   }
 };
+
+// --- User Profile API Calls ---
+
+export const getUserProfile = async () => {
+  try {
+    const res = await api.get('/api/users/profile');
+    return res.data;
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    throw error;
+  }
+};
+
+export const updateUserProfile = async (updateData) => {
+  try {
+    const res = await api.put('/api/users/profile', updateData);
+    return res.data;
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    throw error;
+  }
+};
+
+export const getUserAddress = async () => {
+  try {
+    const res = await api.get('/api/users/address');
+    return res.data;
+  } catch (error) {
+    console.error('Error fetching user address:', error);
+    throw error;
+  }
+};

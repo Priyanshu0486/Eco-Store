@@ -8,7 +8,6 @@ public class SignUpRequest {
     private String username;
     private String email;
     private String password;
-    private Integer age; // <-- Add this line
-    private String phoneNumber; // <-- Add this line
-    private LocalDate dateOfBirth; // <-- Add this line
+    private String phoneNumber;
+    private LocalDate dateOfBirth;
 }

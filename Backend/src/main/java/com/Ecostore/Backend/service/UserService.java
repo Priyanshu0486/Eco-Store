@@ -5,11 +5,14 @@ import com.Ecostore.Backend.dto.SignUpRequest;
 import com.Ecostore.Backend.dto.UserUpdateRequest;
 import com.Ecostore.Backend.model.Role;
 import com.Ecostore.Backend.model.User;
+import com.Ecostore.Backend.model.Order;
 import com.Ecostore.Backend.repository.UserRepository;
+import com.Ecostore.Backend.repository.OrderRepository;
 import com.Ecostore.Backend.util.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -21,13 +24,15 @@ public class UserService {
 
     @Autowired
     private JwtUtils jwtUtils;
+    
+    @Autowired
+    private OrderRepository orderRepository;
 
     public User createUser(SignUpRequest signUpRequest) {
         User user = new User();
         user.setUsername(signUpRequest.getUsername());
         user.setEmail(signUpRequest.getEmail());
         user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
-        user.setAge(signUpRequest.getAge());
         user.setPhoneNumber(signUpRequest.getPhoneNumber());
         user.setDateOfBirth(signUpRequest.getDateOfBirth());
         user.setRole(Role.ROLE_USER); // Default role
@@ -86,5 +91,16 @@ public class UserService {
         }
 
         return userRepository.save(user);
+    }
+    
+    public String getUserAddress(Long userId) {
+        // Find the most recent order for the user
+        Optional<Order> latestOrder = orderRepository.findTopByUserIdOrderByOrderDateDesc(userId);
+        
+        if (latestOrder.isPresent() && latestOrder.get().getShippingAddress() != null) {
+            return latestOrder.get().getShippingAddress();
+        }
+        
+        return "No address found"; // Default message if no orders or address
     }
 }
