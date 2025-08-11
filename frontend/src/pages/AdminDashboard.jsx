@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
+  AppBar,
+  Toolbar,
   Container, 
   Typography, 
   Box, 
@@ -20,6 +22,8 @@ import {
   MenuItem
 } from '@mui/material';
 import Button from '@mui/material/Button';
+import { Link } from 'react-router-dom';
+import logo from '../pages/logo.png';
 import { useNavigate } from 'react-router-dom';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { 
@@ -41,6 +45,13 @@ const categories = [
 
 function AdminDashboard() {
   const navigate = useNavigate();
+  
+  const handleLogout = () => {
+    // Clear the authentication token
+    localStorage.removeItem('jwt');
+    // Force a full page refresh to clear all state
+    window.location.href = '/';
+  };
   const [products, setProducts] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({
     totalUsers: 0,
@@ -149,7 +160,63 @@ function AdminDashboard() {
   );
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar
+        position="sticky"
+        elevation={0}
+        sx={{
+          backgroundColor: 'white',
+          borderBottom: '1px solid #e0e0e0',
+          color: 'text.primary',
+          mb: 4
+        }}
+      >
+        <Container maxWidth="xl">
+          <Toolbar disableGutters>
+            <Box component={Link} to="/" sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexGrow: { xs: 1, md: 0 } }}>
+              <img 
+                src={logo}
+                alt="EcoStore Logo" 
+                style={{
+                  height: '70px',
+                  marginRight: '5px',
+                  objectFit: 'contain'
+                }}
+              />
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  letterSpacing: '.2rem',
+                  color: 'primary.main',
+                  textDecoration: 'none',
+                  display: { xs: 'none', sm: 'block' }
+                }}
+              >
+                ECOSTORE
+              </Typography>
+            </Box>
+            <Box sx={{ flexGrow: 1 }} />
+            <Button 
+              variant="contained" 
+              color="primary"
+              onClick={handleLogout}
+              sx={{
+                backgroundColor: 'rgb(85, 180, 66)',
+                '&:hover': {
+                  backgroundColor: 'rgb(65, 150, 46)',
+                },
+                textTransform: 'none',
+                fontWeight: 'bold',
+                padding: '8px 20px'
+              }}
+            >
+              Logout
+            </Button>
+          </Toolbar>
+        </Container>
+      </AppBar>
+      <Container maxWidth="lg" sx={{ mb: 4 }}>
       <Typography variant="h4" gutterBottom sx={{ mb: 4, fontWeight: 'bold' }}>
         Admin Dashboard
       </Typography>
@@ -258,6 +325,7 @@ function AdminDashboard() {
         </Grid>
       </Grid>
     </Container>
+    </Box>
   );
 }
 

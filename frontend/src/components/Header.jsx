@@ -22,6 +22,12 @@ import {
   MenuItem,
   ListItemIcon,
   Tooltip,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Grid,
+  Paper,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -29,6 +35,9 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PersonAdd from '@mui/icons-material/PersonAdd';
 import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
+import CloseIcon from '@mui/icons-material/Close';
+import EditIcon from '@mui/icons-material/Edit';
+import CheckIcon from '@mui/icons-material/Check';
 import { useCart } from '../contexts/CartContext';
 import { green } from '@mui/material/colors';
 import { fetchEcoCoinBalance } from '../utils/api';
@@ -36,10 +45,21 @@ import { fetchEcoCoinBalance } from '../utils/api';
 // AccountMenu Component
 function AccountMenu({ onLogout, navigate }) {
   const [anchorEl, setAnchorEl] = useState(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState({
+    name: 'Your name',
+    email: 'yourname@gmail.com',
+    mobile: '',
+    location: 'USA'
+  });
+  const [editingField, setEditingField] = useState(null);
+  const [tempValue, setTempValue] = useState('');
   const open = Boolean(anchorEl);
+  
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
+  
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -47,6 +67,48 @@ function AccountMenu({ onLogout, navigate }) {
   const handleLogout = () => {
     handleClose();
     onLogout();
+  };
+  
+  const handleMyAccountClick = () => {
+    handleClose();
+    setProfileModalOpen(true);
+  };
+  
+  const handleProfileModalClose = () => {
+    setProfileModalOpen(false);
+  };
+  
+  const handleProfileChange = (field, value) => {
+    setUserProfile(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+  
+  const handleSaveProfile = () => {
+    // Here you would typically save to backend
+    console.log('Saving profile:', userProfile);
+    // For now, just close the modal
+    setProfileModalOpen(false);
+  };
+  
+  const handleEditField = (field) => {
+    setEditingField(field);
+    setTempValue(userProfile[field]);
+  };
+  
+  const handleSaveField = () => {
+    setUserProfile(prev => ({
+      ...prev,
+      [editingField]: tempValue
+    }));
+    setEditingField(null);
+    setTempValue('');
+  };
+  
+  const handleCancelEdit = () => {
+    setEditingField(null);
+    setTempValue('');
   };
   
   return (
@@ -103,7 +165,7 @@ function AccountMenu({ onLogout, navigate }) {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         
-        <MenuItem onClick={() => { handleClose(); navigate('/profile'); }}>
+        <MenuItem onClick={handleMyAccountClick}>
           <Avatar /> My account
         </MenuItem>
         <Divider />
@@ -114,6 +176,303 @@ function AccountMenu({ onLogout, navigate }) {
           Logout
         </MenuItem>
       </Menu>
+      
+      {/* Profile Modal */}
+      <Dialog
+        open={profileModalOpen}
+        onClose={handleProfileModalClose}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '20px',
+            padding: '24px',
+            maxWidth: '450px',
+            margin: 'auto'
+          }
+        }}
+      >
+        <Box sx={{ position: 'relative' }}>
+          {/* Close Button */}
+          <IconButton 
+            onClick={handleProfileModalClose}
+            sx={{ 
+              position: 'absolute',
+              top: -8,
+              right: -8,
+              backgroundColor: 'rgba(0,0,0,0.1)',
+              color: 'rgba(0,0,0,0.6)',
+              '&:hover': {
+                backgroundColor: 'rgba(0,0,0,0.2)'
+              },
+              zIndex: 1
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          
+          {/* Profile Header */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2,
+            mb: 4,
+            position: 'relative'
+          }}>
+            <Box sx={{ position: 'relative' }}>
+              <Avatar 
+                sx={{ 
+                  width: 80, 
+                  height: 80, 
+                  backgroundColor: 'primary.main',
+                  fontSize: '32px',
+                  fontWeight: 'bold'
+                }}
+              >
+                M
+              </Avatar>
+              {/* Edit Icon on Avatar */}
+              <IconButton 
+                size="small" 
+                sx={{ 
+                  position: 'absolute',
+                  bottom: 0,
+                  right: 0,
+                  backgroundColor: 'white',
+                  border: '2px solid #f0f0f0',
+                  width: 28,
+                  height: 28,
+                  '&:hover': {
+                    backgroundColor: '#f5f5f5'
+                  }
+                }}
+              >
+                <EditIcon sx={{ fontSize: 14, color: '#666' }} />
+              </IconButton>
+            </Box>
+            <Box>
+              <Typography variant="h5" sx={{ 
+                fontWeight: 600,
+                color: '#333',
+                mb: 0.5
+              }}>
+                {userProfile.name}
+              </Typography>
+              <Typography variant="body1" sx={{ 
+                color: '#666',
+                fontSize: '16px'
+              }}>
+                {userProfile.email}
+              </Typography>
+            </Box>
+          </Box>
+          
+          {/* Profile Fields */}
+          <Box sx={{ mb: 4 }}>
+            {/* Name Field */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              py: 2,
+              borderBottom: '1px solid #e0e0e0'
+            }}>
+              <Typography variant="body1" sx={{ 
+                color: '#666',
+                fontSize: '16px'
+              }}>
+                Name
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {editingField === 'name' ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <TextField
+                      value={tempValue}
+                      onChange={(e) => setTempValue(e.target.value)}
+                      size="small"
+                      sx={{ 
+                        '& .MuiOutlinedInput-root': {
+                          fontSize: '16px',
+                          height: '32px'
+                        }
+                      }}
+                    />
+                    <IconButton 
+                      size="small" 
+                      onClick={handleSaveField}
+                      sx={{ color: 'primary.main' }}
+                    >
+                      <CheckIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton 
+                      size="small" 
+                      onClick={handleCancelEdit}
+                      sx={{ color: '#666' }}
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                ) : (
+                  <>
+                    <Typography variant="body1" sx={{ 
+                      fontWeight: 500,
+                      color: '#666',
+                      fontSize: '16px'
+                    }}>
+                      {userProfile.name}
+                    </Typography>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleEditField('name')}
+                      sx={{ 
+                        color: '#999',
+                        '&:hover': { color: 'primary.main' }
+                      }}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  </>
+                )}
+              </Box>
+            </Box>
+            
+            {/* Email Field */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              py: 2,
+              borderBottom: '1px solid #e0e0e0'
+            }}>
+              <Typography variant="body1" sx={{ 
+                color: '#666',
+                fontSize: '16px'
+              }}>
+                Email account
+              </Typography>
+              <Typography variant="body1" sx={{ 
+                fontWeight: 500,
+                color: '#666',
+                fontSize: '16px'
+              }}>
+                {userProfile.email}
+              </Typography>
+            </Box>
+            
+            {/* Mobile Field */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              py: 2,
+              borderBottom: '1px solid #e0e0e0'
+            }}>
+              <Typography variant="body1" sx={{ 
+                color: '#666',
+                fontSize: '16px'
+              }}>
+                Mobile number
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {editingField === 'mobile' ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <TextField
+                      value={tempValue}
+                      onChange={(e) => setTempValue(e.target.value)}
+                      placeholder="Enter mobile number"
+                      size="small"
+                      sx={{ 
+                        '& .MuiOutlinedInput-root': {
+                          fontSize: '16px',
+                          height: '32px'
+                        }
+                      }}
+                    />
+                    <IconButton 
+                      size="small" 
+                      onClick={handleSaveField}
+                      sx={{ color: 'primary.main' }}
+                    >
+                      <CheckIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton 
+                      size="small" 
+                      onClick={handleCancelEdit}
+                      sx={{ color: '#666' }}
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                ) : (
+                  <>
+                    <Typography variant="body1" sx={{ 
+                      fontWeight: 500,
+                      color: userProfile.mobile ? '#666' : '#999',
+                      fontSize: '16px'
+                    }}>
+                      {userProfile.mobile || 'Add number'}
+                    </Typography>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleEditField('mobile')}
+                      sx={{ 
+                        color: '#999',
+                        '&:hover': { color: 'primary.main' }
+                      }}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  </>
+                )}
+              </Box>
+            </Box>
+            
+            {/* Location Field */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              py: 2
+            }}>
+              <Typography variant="body1" sx={{ 
+                color: '#666',
+                fontSize: '16px'
+              }}>
+                Address
+              </Typography>
+              <Typography variant="body1" sx={{ 
+                fontWeight: 500,
+                color: '#666',
+                fontSize: '16px'
+              }}>
+                {userProfile.location}
+              </Typography>
+            </Box>
+          </Box>
+          
+          {/* Save Button */}
+          <Button
+            variant="contained"
+            onClick={handleSaveProfile}
+            sx={{
+              backgroundColor: 'primary.main',
+              borderRadius: '12px',
+              textTransform: 'none',
+              fontWeight: 600,
+              fontSize: '16px',
+              py: 1.5,
+              px: 4,
+              boxShadow: 'none',
+              '&:hover': {
+                backgroundColor: 'rgb(5, 88, 5)',
+                boxShadow: 'none'
+              }
+            }}
+          >
+            Save Change
+          </Button>
+        </Box>
+      </Dialog>
     </React.Fragment>
   );
 }
