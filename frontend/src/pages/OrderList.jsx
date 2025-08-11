@@ -193,7 +193,7 @@ function OrderList() {
       {/* Filters Section */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Grid container spacing={3} alignItems="center">
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={4}sx={{ width: '30%' }}>
             <TextField
               fullWidth
               placeholder="Search by customer name, order ID, or user ID"
@@ -204,11 +204,11 @@ function OrderList() {
                   <InputAdornment position="start">
                     <SearchIcon />
                   </InputAdornment>
-                ),
+                ), 
               }}
             />
           </Grid>
-          <Grid item xs={12} md={3}>
+          <Grid item xs={50} md={3} sx={{ width: '10%' }}>
             <FormControl fullWidth>
               <InputLabel>Order Status</InputLabel>
               <Select
@@ -223,7 +223,7 @@ function OrderList() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12} md={3} sx={{ width: '12%' }}>
             <FormControl fullWidth>
               <InputLabel>Payment Status</InputLabel>
               <Select
@@ -238,7 +238,7 @@ function OrderList() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid item xs={12} md={2} sx={{ width: '12%' }}>
             <Typography variant="body2" color="textSecondary">
               Total Orders: {filteredOrders.length}
             </Typography>

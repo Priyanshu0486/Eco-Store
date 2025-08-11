@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import UserProfile from './pages/UserProfile';
 import { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
 import { CartProvider } from './contexts/CartContext';
@@ -50,7 +49,6 @@ function AppContent() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/dashboard" element={<Dashboard user={user} />} />
-          <Route path="/profile" element={<UserProfile user={user} />} />
           <Route path="/eco-store" element={<EcoStore user={user} />} />
           <Route path="/wallet" element={<Wallet />} />
           <Route path="/checkout" element={<Checkout />} />
