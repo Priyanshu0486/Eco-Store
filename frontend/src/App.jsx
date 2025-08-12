@@ -12,6 +12,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import OrderList from './pages/OrderList';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
+import AboutUs from './pages/AboutUs';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -55,7 +56,8 @@ function AppContent() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/orders" element={<OrderList />} />
           <Route path="/product/:productId" element={<ProductDetail />} />
-          <Route path="/cart" element={<Cart />} />
+                    <Route path="/cart" element={<Cart />} />
+          <Route path="/about-us" element={<AboutUs />} />
         </Routes>
       </Box>
       <Footer />
