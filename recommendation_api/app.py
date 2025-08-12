@@ -16,7 +16,10 @@ def recommend():
 
     prod_id = data["prod_id"]
 
-    recs = final_model(prod_id)
+    recs_content_based = final_model(prod_id)[0]
+    recs_collborative_filtering = final_model(prod_id)[1]
+    recs.append(recs_content_based)
+    recs.append(recs_collborative_filtering)
 
     if not isinstance(recs, list):
         recs = list(recs)
