@@ -28,4 +28,11 @@ public class UserController {
         User updatedUser = userService.updateUserProfile(user.getId(), updateRequest);
         return ResponseEntity.ok(updatedUser);
     }
+    
+    @GetMapping("/address")
+    public ResponseEntity<String> getUserAddress(@RequestHeader("Authorization") String jwt) {
+        User user = userService.findUserProfileByJwt(jwt);
+        String address = userService.getUserAddress(user.getId());
+        return ResponseEntity.ok(address);
+    }
 }

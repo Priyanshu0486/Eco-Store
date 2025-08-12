@@ -28,6 +28,8 @@ import {
   TextField,
   Grid,
   Paper,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -40,20 +42,23 @@ import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
 import { useCart } from '../contexts/CartContext';
 import { green } from '@mui/material/colors';
-import { fetchEcoCoinBalance } from '../utils/api';
+import { fetchEcoCoinBalance, getUserProfile, updateUserProfile, getUserAddress } from '../utils/api';
 
 // AccountMenu Component
 function AccountMenu({ onLogout, navigate }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [userProfile, setUserProfile] = useState({
-    name: 'Your name',
-    email: 'yourname@gmail.com',
+    name: '',
+    email: '',
     mobile: '',
-    location: 'USA'
+    location: ''
   });
   const [editingField, setEditingField] = useState(null);
   const [tempValue, setTempValue] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
   const open = Boolean(anchorEl);
   
   const handleClick = (event) => {
@@ -69,13 +74,43 @@ function AccountMenu({ onLogout, navigate }) {
     onLogout();
   };
   
-  const handleMyAccountClick = () => {
+  const handleMyAccountClick = async () => {
     handleClose();
     setProfileModalOpen(true);
+    await loadUserProfile();
   };
   
   const handleProfileModalClose = () => {
     setProfileModalOpen(false);
+    setEditingField(null);
+    setTempValue('');
+    setError(null);
+  };
+  
+  // Load user profile data from backend
+  const loadUserProfile = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Fetch user profile and address in parallel
+      const [profileData, addressData] = await Promise.all([
+        getUserProfile(),
+        getUserAddress()
+      ]);
+      
+      setUserProfile({
+        name: profileData.username || '',
+        email: profileData.email || '',
+        mobile: profileData.phoneNumber || '',
+        location: addressData || 'No address found'
+      });
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+      setError('Failed to load profile data');
+    } finally {
+      setLoading(false);
+    }
   };
   
   const handleProfileChange = (field, value) => {
@@ -85,11 +120,25 @@ function AccountMenu({ onLogout, navigate }) {
     }));
   };
   
-  const handleSaveProfile = () => {
-    // Here you would typically save to backend
-    console.log('Saving profile:', userProfile);
-    // For now, just close the modal
-    setProfileModalOpen(false);
+  const handleSaveProfile = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      
+      // Only send editable fields to backend
+      const updateData = {
+        username: userProfile.name,
+        phoneNumber: userProfile.mobile
+      };
+      
+      await updateUserProfile(updateData);
+      setProfileModalOpen(false);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      setError('Failed to save profile changes');
+    } finally {
+      setSaving(false);
+    }
   };
   
   const handleEditField = (field) => {
@@ -97,13 +146,41 @@ function AccountMenu({ onLogout, navigate }) {
     setTempValue(userProfile[field]);
   };
   
-  const handleSaveField = () => {
-    setUserProfile(prev => ({
-      ...prev,
-      [editingField]: tempValue
-    }));
-    setEditingField(null);
-    setTempValue('');
+  const handleSaveField = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      
+      console.log('🔄 Saving field:', editingField, 'with value:', tempValue);
+      
+      // Only allow editing of name and mobile
+      if (editingField === 'name' || editingField === 'mobile') {
+        const updateData = {
+          username: editingField === 'name' ? tempValue : userProfile.name,
+          phoneNumber: editingField === 'mobile' ? tempValue : userProfile.mobile
+        };
+        
+        console.log('📤 Sending update data:', updateData);
+        
+        const result = await updateUserProfile(updateData);
+        console.log('✅ Update successful:', result);
+        
+        setUserProfile(prev => ({
+          ...prev,
+          [editingField]: tempValue
+        }));
+        
+        console.log('🔄 Updated local state');
+      }
+      
+      setEditingField(null);
+      setTempValue('');
+    } catch (error) {
+      console.error('❌ Error saving field:', error);
+      setError('Failed to save changes');
+    } finally {
+      setSaving(false);
+    }
   };
   
   const handleCancelEdit = () => {
@@ -212,7 +289,22 @@ function AccountMenu({ onLogout, navigate }) {
             <CloseIcon />
           </IconButton>
           
+          {/* Loading State */}
+          {loading && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
+          )}
+          
+          {/* Error State */}
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
+          )}
+          
           {/* Profile Header */}
+          {!loading && (
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -267,8 +359,10 @@ function AccountMenu({ onLogout, navigate }) {
               </Typography>
             </Box>
           </Box>
+          )}
           
           {/* Profile Fields */}
+          {!loading && (
           <Box sx={{ mb: 4 }}>
             {/* Name Field */}
             <Box sx={{ 
@@ -450,11 +544,15 @@ function AccountMenu({ onLogout, navigate }) {
               </Typography>
             </Box>
           </Box>
+          )}
           
           {/* Save Button */}
+          {!loading && (
           <Button
             variant="contained"
             onClick={handleSaveProfile}
+            disabled={saving || loading}
+            startIcon={saving ? <CircularProgress size={20} color="inherit" /> : null}
             sx={{
               backgroundColor: 'primary.main',
               borderRadius: '12px',
@@ -467,11 +565,15 @@ function AccountMenu({ onLogout, navigate }) {
               '&:hover': {
                 backgroundColor: 'rgb(5, 88, 5)',
                 boxShadow: 'none'
+              },
+              '&:disabled': {
+                backgroundColor: '#ccc'
               }
             }}
           >
-            Save Change
+            {saving ? 'Saving...' : 'Save Changes'}
           </Button>
+          )}
         </Box>
       </Dialog>
     </React.Fragment>

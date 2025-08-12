@@ -27,7 +27,6 @@ public class DataInitializer implements CommandLineRunner {
             admin.setUsername("admin");
             admin.setEmail("admin@ecostore.com");
             admin.setPassword(passwordEncoder.encode("root"));
-            admin.setAge(30); // Default age
             admin.setPhoneNumber("1234567890"); // Default phone
             admin.setDateOfBirth(null); // Default DOB
             admin.setRole(Role.ROLE_ADMIN);

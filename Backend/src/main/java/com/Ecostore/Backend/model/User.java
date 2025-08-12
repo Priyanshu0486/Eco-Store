@@ -24,9 +24,7 @@ public class User {
 
     private String password;
 
-    private Integer age; // <-- Add this line
-
-    private String phoneNumber; // <-- Add this line
+    private String phoneNumber;
 
     private LocalDate dateOfBirth; // <-- Add this line
 

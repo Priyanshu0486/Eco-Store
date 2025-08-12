@@ -42,6 +42,8 @@ function EcoStore() {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [isSearchMode, setIsSearchMode] = useState(false); // Track if we're in search mode
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 30;
   
   const { addToCart } = useCart();
 
@@ -122,7 +124,36 @@ function EcoStore() {
   };
 
   // Products are now filtered by the backend, so we use them directly
-  const displayProducts = products;
+  const allProducts = products;
+  
+  // Pagination logic
+  const totalPages = Math.ceil(allProducts.length / productsPerPage);
+  const startIndex = (currentPage - 1) * productsPerPage;
+  const endIndex = startIndex + productsPerPage;
+  const displayProducts = allProducts.slice(startIndex, endIndex);
+  
+  // Reset to page 1 when products change (search/category change)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [products, selectedCategory, searchTerm]);
+  
+  // Pagination handlers
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      handlePageChange(currentPage - 1);
+    }
+  };
+  
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      handlePageChange(currentPage + 1);
+    }
+  };
 
   return (
     <Box sx={{background: 'radial-gradient(circle at top left, #e0f7fa 0%, #e8f5e9 40%, #fffde7 100%)', py: 4}}>
@@ -259,7 +290,8 @@ function EcoStore() {
           </Box>
           
           <Typography variant="subtitle2" color="text.secondary">
-            {displayProducts.length} products found {isSearchMode ? `for "${searchTerm}"` : ''}
+            Showing {startIndex + 1}-{Math.min(endIndex, allProducts.length)} of {allProducts.length} products {isSearchMode ? `for "${searchTerm}"` : ''}
+            
           </Typography>
         </Box>
         
@@ -320,6 +352,108 @@ function EcoStore() {
                 />
               </Box>
             ))}
+          </Box>
+        )}
+        
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            mt: 6, 
+            mb: 4,
+            gap: 2
+          }}>
+            <Button
+              variant="outlined"
+              onClick={handlePrevPage}
+              disabled={currentPage === 1}
+              sx={{
+                minWidth: '120px',
+                py: 1.5,
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 600
+              }}
+            >
+              ← Previous
+            </Button>
+            
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1,
+              mx: 2
+            }}>
+              {/* Page Numbers */}
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? 'contained' : 'outlined'}
+                    onClick={() => handlePageChange(pageNum)}
+                    sx={{
+                      minWidth: '40px',
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      p: 0,
+                      fontSize: '0.875rem',
+                      fontWeight: currentPage === pageNum ? 700 : 500
+                    }}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+              
+              {totalPages > 5 && currentPage < totalPages - 2 && (
+                <>
+                  <Typography variant="body2" color="text.secondary" sx={{ mx: 1 }}>...</Typography>
+                  <Button
+                    variant="outlined"
+                    onClick={() => handlePageChange(totalPages)}
+                    sx={{
+                      minWidth: '40px',
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      p: 0,
+                      fontSize: '0.875rem'
+                    }}
+                  >
+                    {totalPages}
+                  </Button>
+                </>
+              )}
+            </Box>
+            
+            <Button
+              variant="outlined"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              sx={{
+                minWidth: '120px',
+                py: 1.5,
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 600
+              }}
+            >
+              Next →
+            </Button>
           </Box>
         )}
         

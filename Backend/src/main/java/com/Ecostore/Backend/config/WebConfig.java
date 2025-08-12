@@ -13,9 +13,9 @@ public class WebConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                // Allow requests from your React frontend (running on port 5173)
+                // Allow requests from your React frontend and testing tools
                 registry.addMapping("/api/**") // This applies CORS to all your API endpoints
-                        .allowedOrigins("http://localhost:5173") // The origin of your frontend app
+                        .allowedOrigins("http://localhost:5173", "http://localhost:3000", "http://localhost:8080") // Multiple allowed origins
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Allowed HTTP methods
                         .allowedHeaders("*") // Allow all headers
                         .allowCredentials(true); // Allow credentials
