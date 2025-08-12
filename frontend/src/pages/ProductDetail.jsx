@@ -118,13 +118,13 @@ function ProductDetail() {
         </Button>
         <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, borderRadius: 3 }}>
           <Grid container spacing={{ xs: 2, md: 5 }}>
-            <Grid item xs={12} md={6}>
-              <Box sx={{ borderRadius: 2, overflow: 'hidden', boxShadow: '0 8px 16px rgba(0,0,0,0.1)' }}>
-                <img src={product.imageUrl} alt={product.name} style={{ width: '100%', height: 'auto', display: 'block' }} />
+            <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Box sx={{ width: 'fit-content', borderRadius: 2, overflow: 'hidden', boxShadow: '0 8px 16px rgba(0,0,0,0.1)' }}>
+                <img src={product.imageUrl} alt={product.name} style={{ width: '100%', maxWidth: '400px', height: 'auto', display: 'block' }} />
               </Box>
             </Grid>
             <Grid item xs={12} md={6} sx={{ display: 'flex', flexDirection: 'column' }}>
-              <Chip label={product.category}  sx={{ alignSelf: 'flex-start', mb: 2, fontWeight: 600 }} />
+              
               <Typography variant="h3" component="h1" sx={{ fontWeight: 700, mb: 1 }}>
                 {product.name}
               </Typography>

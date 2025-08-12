@@ -95,8 +95,15 @@ function Wallet() {
         couponCode: result.couponCode
       };
       setRedemptionHistory(prev => [newRedemption, ...prev]);
-      
-      setSuccessMessage(`Successfully redeemed ${option.coins} EcoCoins! Your coupon code: ${result.couponCode}`);
+    
+    // Automatically copy coupon code to clipboard
+    try {
+      await navigator.clipboard.writeText(result.couponCode);
+      setSuccessMessage(`Successfully redeemed ${option.coins} EcoCoins! Your coupon code ${result.couponCode} has been copied to clipboard!`);
+    } catch (clipboardErr) {
+      console.error('Failed to copy coupon code to clipboard:', clipboardErr);
+      setSuccessMessage(`Successfully redeemed ${option.coins} EcoCoins! Your coupon code: ${result.couponCode} (Copy failed - please copy manually)`);
+    }
       
     } catch (err) {
       console.error('Error redeeming EcoCoins:', err);

@@ -42,7 +42,7 @@ function Footer() {
     {
       title: 'Company',
       links: [
-        { name: 'About Us', url: '/about' },
+        { name: 'About Us', url: '/aboutus' },
         { name: 'Careers', url: '/careers' },
         { name: 'Blog', url: '/blog' },
         { name: 'Press', url: '/press' }
