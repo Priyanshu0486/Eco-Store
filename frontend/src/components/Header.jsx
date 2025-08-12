@@ -168,6 +168,7 @@ function AccountMenu({ onLogout, navigate }) {
         <MenuItem onClick={handleMyAccountClick}>
           <Avatar /> My account
         </MenuItem>
+        
         <Divider />
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
@@ -514,10 +515,11 @@ function Header({ user, onLogout }) {
   }, [user?.loggedIn]);
 
   const menuItems = [
-    { text: 'Store', path: '/eco-store' },
+    { text: 'EcoStore', path: '/eco-store' },
     { text: 'Dashboard', path: '/dashboard' },
     { text: 'Wallet', path: '/wallet' },
     { text: 'Checkout', path: '/checkout' },
+    { text: 'About Us', path: '/about-us' },
   ];
 
   const drawerContent = (

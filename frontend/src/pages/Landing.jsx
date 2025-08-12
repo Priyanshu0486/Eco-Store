@@ -309,10 +309,6 @@ function Landing() {
                     <DialogContent sx={{ p: 4 }}>
                       <Box sx={{ textAlign: 'center', mb: 3 }}>
                         <EnergySavingsLeafIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-                        <Typography variant="h6" component="div" sx={{ fontWeight: 500, mb: 2, color: 'text.primary' }}>
-                          This project is an independent, hackathon-built Amazon extension designed for Amazon HackOn, 
-                          aimed at making sustainable shopping seamless, rewarding, and impactful.
-                        </Typography>
                         <Typography variant="body1" color="text.secondary" sx={{ mt: 2, lineHeight: 1.7 }}>
                           We believe in creating a greener future by encouraging eco-conscious shopping habits 
                           and rewarding users for making sustainable choices. Our platform helps you track your 
