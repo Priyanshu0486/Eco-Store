@@ -2,7 +2,7 @@ import React from 'react';
 import { Container, Typography, Paper, Box, Avatar, Grid } from '@mui/material';
 import priyanshu_pic from '../pages/priyanshu_pic.jpg';
 import Ashu_pic from '../pages/Ashu_pic.jpg';
-import Jemmut_pic from '../pages/Jemmut_pic.jpg';
+import Jemmut_pic from '../pages/Jem_pic.jpg';
 import Sruti_pic from '../pages/Sruti_pic.png';
 
 const AboutUs = () => {
@@ -39,7 +39,7 @@ const AboutUs = () => {
           Welcome to ECOSTORE, your number one source for all things eco-friendly. We're dedicated to giving you the very best of sustainable products, with a focus on quality, customer service, and uniqueness.
         </Typography>
         <Typography variant="body1" paragraph>
-          Founded in 2024, Eco-Store has come a long way from its beginnings. When we first started out, our passion for a greener planet drove us to do intense research, and gave us the impetus to turn hard work and inspiration into to a booming online store. 
+          Founded in 2025, Eco-Store has come a long way from its beginnings. When we first started out, our passion for a greener planet drove us to do intense research, and gave us the impetus to turn hard work and inspiration into a booming online store. 
         </Typography>
         <Typography variant="body1">
         Today’s online shopping platforms often overlook climate action. While sustainable 
