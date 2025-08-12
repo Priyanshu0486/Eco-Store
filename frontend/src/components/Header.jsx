@@ -621,7 +621,7 @@ function Header({ user, onLogout }) {
     { text: 'Dashboard', path: '/dashboard' },
     { text: 'Wallet', path: '/wallet' },
     { text: 'Checkout', path: '/checkout' },
-    { text: 'About Us', path: '/about-us' },
+    { text: 'About Us', path: '/aboutus' },
   ];
 
   const drawerContent = (
