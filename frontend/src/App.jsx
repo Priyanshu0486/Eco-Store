@@ -56,8 +56,8 @@ function AppContent() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/orders" element={<OrderList />} />
           <Route path="/product/:productId" element={<ProductDetail />} />
-                    <Route path="/cart" element={<Cart />} />
-          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/aboutus" element={<AboutUs />} />
         </Routes>
       </Box>
       <Footer />
