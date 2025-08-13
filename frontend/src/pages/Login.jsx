@@ -27,8 +27,24 @@ function Login({ setUser }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  
+  // Validation state
+  const [phoneError, setPhoneError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   const navigate = useNavigate();
+
+  // Validation functions
+  const validatePhoneNumber = (phone) => {
+    const phoneRegex = /^\d{10}$/;
+    return phoneRegex.test(phone);
+  };
+
+  const validatePassword = (password) => {
+    // At least 8 characters, contains at least one symbol
+    const passwordRegex = /^(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+    return passwordRegex.test(password);
+  };
 
   const handleResponse = (message, isError = false) => {
     if (isError) {
@@ -106,6 +122,17 @@ function Login({ setUser }) {
     if (!username || !email || !password || !phoneNumber || !dateOfBirth) {
       return handleResponse('Please fill in all fields', true);
     }
+
+    // Validate phone number
+    if (!validatePhoneNumber(phoneNumber)) {
+      return handleResponse('Phone number must be exactly 10 digits', true);
+    }
+
+    // Validate password
+    if (!validatePassword(password)) {
+      return handleResponse('Password must be at least 8 characters long and contain at least one symbol (!@#$%^&*)', true);
+    }
+
     try {
       // HTML date input already returns YYYY-MM-DD format, no need to reverse
       const signupData = { username, email, password, phoneNumber, dateOfBirth };
@@ -406,16 +433,26 @@ function Login({ setUser }) {
                 margin="dense"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  const newPassword = e.target.value;
+                  setPassword(newPassword);
+                  if (newPassword && !validatePassword(newPassword)) {
+                    setPasswordError('Password must be at least 8 characters with symbols');
+                  } else {
+                    setPasswordError('');
+                  }
+                }}
+                error={!!passwordError}
+                helperText={passwordError}
                 InputLabelProps={{ shrink: true }}
                  sx={{
                   '& .MuiInputLabel-root': { position: 'relative', transform: 'none', color: '#000', fontWeight: 'bold', fontSize: '1rem', mb: -1 },
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '25px',
                     backgroundColor: '#fff',
-                    '& fieldset': { borderColor: '#000' },
-                    '&:hover fieldset': { borderColor: '#000' },
-                    '&.Mui-focused fieldset': { borderColor: '#000' },
+                    '& fieldset': { borderColor: passwordError ? '#f44336' : '#000' },
+                    '&:hover fieldset': { borderColor: passwordError ? '#f44336' : '#000' },
+                    '&.Mui-focused fieldset': { borderColor: passwordError ? '#f44336' : '#000' },
                   }
                 }}
               />
@@ -425,16 +462,28 @@ function Login({ setUser }) {
                 fullWidth
                 margin="dense"
                 value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
+                onChange={(e) => {
+                  const newPhone = e.target.value.replace(/\D/g, ''); // Only allow digits
+                  if (newPhone.length <= 10) {
+                    setPhoneNumber(newPhone);
+                    if (newPhone && !validatePhoneNumber(newPhone)) {
+                      setPhoneError('Phone number must be exactly 10 digits');
+                    } else {
+                      setPhoneError('');
+                    }
+                  }
+                }}
+                error={!!phoneError}
+                helperText={phoneError || 'Enter 10-digit phone number'}
                 InputLabelProps={{ shrink: true }}
                 sx={{
                   '& .MuiInputLabel-root': { position: 'relative', transform: 'none', color: '#000', fontWeight: 'bold', fontSize: '1rem', mb: -1 },
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '25px',
                     backgroundColor: '#fff',
-                    '& fieldset': { borderColor: '#000' },
-                    '&:hover fieldset': { borderColor: '#000' },
-                    '&.Mui-focused fieldset': { borderColor: '#000' },
+                    '& fieldset': { borderColor: phoneError ? '#f44336' : '#000' },
+                    '&:hover fieldset': { borderColor: phoneError ? '#f44336' : '#000' },
+                    '&.Mui-focused fieldset': { borderColor: phoneError ? '#f44336' : '#000' },
                   }
                 }}
               />

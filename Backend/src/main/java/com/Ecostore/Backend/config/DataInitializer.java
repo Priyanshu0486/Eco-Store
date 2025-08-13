@@ -8,7 +8,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -28,7 +28,7 @@ public class DataInitializer implements CommandLineRunner {
             admin.setEmail("admin@ecostore.com");
             admin.setPassword(passwordEncoder.encode("root"));
             admin.setPhoneNumber("1234567890"); // Default phone
-            admin.setDateOfBirth(null); // Default DOB
+            admin.setDateOfBirth(LocalDate.of(1990, 1, 1)); // Default DOB
             admin.setRole(Role.ROLE_ADMIN);
 
             userRepository.save(admin);

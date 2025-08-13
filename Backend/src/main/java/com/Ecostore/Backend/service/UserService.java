@@ -29,6 +29,15 @@ public class UserService {
     private OrderRepository orderRepository;
 
     public User createUser(SignUpRequest signUpRequest) {
+        // Additional validation
+        if (!signUpRequest.getPhoneNumber().matches("^\\d{10}$")) {
+            throw new RuntimeException("Phone number must be exactly 10 digits");
+        }
+        
+        if (!signUpRequest.getPassword().matches("^(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,}$")) {
+            throw new RuntimeException("Password must be at least 8 characters long and contain at least one symbol");
+        }
+
         User user = new User();
         user.setUsername(signUpRequest.getUsername());
         user.setEmail(signUpRequest.getEmail());
