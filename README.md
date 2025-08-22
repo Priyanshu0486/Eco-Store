@@ -35,11 +35,11 @@ This project is built with a modern and robust technology stack to deliver a sea
 
 Here is an overview of the project's directory structure to help you navigate the codebase.
 
-Eco-Store/
+`Eco-Store/
 ├── .gitattributes
 ├── Backend/
 ├── frontend/
-└── recommendation_api/
+└── recommendation_api/`
 
 **Description of Directories**
   * Backend/: This folder likely contains all the server-side logic for your application, such as the API, database connections, and business logic.
