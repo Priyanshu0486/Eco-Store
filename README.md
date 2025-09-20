@@ -91,64 +91,77 @@ Here's a sneak peek into the EcoStore application, from the user-facing storefro
 <img width="1920" height="1020" alt="Screenshot 2025-09-20 185730" src="https://github.com/user-attachments/assets/7ddce818-3ebc-43ad-a627-2d6521431ae9" />
 
 
-### Folder Structure
+## 🚀 Getting Started
 
-Here is an overview of the project's directory structure to help you navigate the codebase.
+To get a local copy up and running, follow these simple steps. This project requires three separate services to be running simultaneously: the backend, the frontend, and the recommendation API.
 
-```sh
-Eco-Store/
-├── .gitattributes
-├── Backend/
-├── frontend/
-└── recommendation_api/
-```
+### Prerequisites
 
-**Description of Directories**
-  * Backend/: This folder likely contains all the server-side logic for your application, such as the API, database connections, and business logic.
+Make sure you have the following installed on your system:
+*   **Java JDK** (v21 or higher)
+*   **Maven** (for Java dependency management)
+*   **Node.js** (v16 or higher)
+*   **Python** (v3.8 or higher)
+*   A **MySQL** database instance running locally.
 
-  * frontend/: This folder probably holds all the client-side code, including the user interface components, styling, and logic that runs in the user's browser.
+### Installation
 
-  * recommendation_api/: This directory most likely contains the specific Python scripts and machine learning models for your recommendation engine, which probably runs as a separate service.
-
-  * .gitattributes: This is a configuration file used by Git to define attributes for specific file paths.
-
-### Getting Started
-
-To get a local copy up and running, follow these simple steps.
-
-**Prerequisites**
-
-  * `Node.js v14 or higher`
-  * `Python 3.8 or higher`
-
-**Installation**
-
-1.  Clone the repository:
+1.  **Clone the repository:**
     ```sh
-    git clone https://github.com/Priyanshu0486/Eco-Store.git
+    git clone [https://github.com/Priyanshu0486/Eco-Store.git](https://github.com/Priyanshu0486/Eco-Store.git)
     ```
-2.  Navigate to the project directory:
+2.  **Navigate to the project directory:**
     ```sh
     cd Eco-Store
     ```
-3.  Install backend dependencies:
-    ```sh
-    cd src/backend
-    pip install -r requirements.txt
-    ```
-4.  Install frontend dependencies:
-    ```sh
-    cd ../frontend
-    npm install
-    ```
 
-**Running the Application**
+3.  **Set up the Backend (Java):**
+    *   Open the `Backend/` directory in your favorite Java IDE (like IntelliJ IDEA or VS Code with Java extensions).
+    *   Your IDE should automatically detect the [pom.xml](cci:7://file:///d:/ecostore%20project/Eco-Store/Backend/pom.xml:0:0-0:0) file and install all required Maven dependencies.
+    *   In your local MySQL instance, create a database named `Ecostore`.
+    *   Verify the database credentials in [src/main/resources/application.properties](cci:7://file:///d:/ecostore%20project/Eco-Store/Backend/src/main/resources/application.properties:0:0-0:0) match your local setup.
 
-1.  Start the backend server from the `src/backend` directory:
-    ```sh
-    python app.py
-    ```
-2.  Start the frontend development server from the `src/frontend` directory:
+4.  **Set up the Frontend (React):**
+    *   Navigate to the frontend directory and install dependencies:
+      ```sh
+      cd frontend
+      npm install
+      ```
+
+5.  **Set up the Recommendation API (Python):**
+    *   Navigate to the recommendation API directory and install dependencies:
+      ```sh
+      cd ../recommendation_api
+      pip install -r requirements.txt
+      ```
+
+### Running the Application
+
+You need to start all three services in separate terminal windows.
+
+1.  **Start the Backend Server:**
+    *   In your Java IDE, find the main application class (`BackendApplication.java`) and run it.
+    *   *Alternatively, from the `Backend/` directory, you can run:*
+      ```sh
+      ./mvnw spring-boot:run
+      ```
+    *   The backend will start on `http://localhost:8080`.
+
+2.  **Start the Recommendation API:**
+    *   From the `recommendation_api/` directory, run:
+      ```sh
+      python app.py
+      ```
+    *   The recommendation service will start on `http://localhost:5000`.
+
+3.  **Start the Frontend Development Server:**
+    *   From the `frontend/` directory, run:
+      ```sh
+      npm run dev
+      ```
+    *   This will open the application in your browser.
+
+Once all services are running, you can access the application at **`http://localhost:5173`** (or the port specified in your terminal).
     ```sh
     npm start
     ```
