@@ -4,7 +4,6 @@ from final_model import final_model
 
 app = Flask(__name__)
 
-model = pickle.load(open("pkl/model.pkl", "rb"))
 
 @app.route("/recommend", methods=["POST"])
 def recommend():
