@@ -81,40 +81,10 @@ function Login({ setUser }) {
     }
   };
 
-  const handleAdminLogin = async () => {
-    // Use hardcoded admin credentials
-    const adminEmail = 'admin@ecostore.com';
-    const adminPassword = 'adminpassword';
-
-    // Set state to show credentials in fields (optional)
-    setEmail(adminEmail);
-    setPassword(adminPassword);
-
-    // Directly call the login logic
-    try {
-      const response = await loginUser({ email: adminEmail, password: adminPassword });
-      localStorage.setItem('jwt', response.token);
-      const userData = {
-        id: response.id,
-        username: response.username,
-        email: response.email,
-        role: response.role,
-        loggedIn: true
-      };
-      localStorage.setItem('userData', JSON.stringify(userData));
-      setUser(userData);
-
-      // Redirect based on role
-      if (response.role === 'ROLE_ADMIN') {
-        navigate('/admin');
-      } else {
-        handleResponse('Logged in, but not as an admin.', true);
-        navigate('/eco-store');
-      }
-    } catch (apiError) {
-      const errorMessage = apiError.response?.data?.message || 'Admin login failed.';
-      handleResponse(errorMessage, true);
-    }
+  const handleAdminLogin = () => {
+    // Pre-fill admin email and clear password
+    setEmail('admin@ecostore.com');
+    setPassword('');
   };
 
   const handleSignup = async (e) => {
@@ -321,7 +291,7 @@ function Login({ setUser }) {
                   },
                 }}
               >
-                Login as Admin (Demo)
+                Login as Admin
               </Button>
               <Button 
                 variant="text" 

@@ -34,5 +34,17 @@ public class DataInitializer implements CommandLineRunner {
             userRepository.save(admin);
             System.out.println("Created default admin user.");
         }
+        if (!userRepository.existsByEmail("user@ecostore.com")) {
+            User demoUser = new User();
+            demoUser.setUsername("demoUser");
+            demoUser.setEmail("user@ecostore.com");
+            demoUser.setPassword(passwordEncoder.encode("user@123"));
+            demoUser.setPhoneNumber("1234567890"); // Default phone
+            demoUser.setDateOfBirth(LocalDate.of(1990, 1, 1)); // Default DOB
+            demoUser.setRole(Role.ROLE_USER);
+
+            userRepository.save(demoUser);
+            System.out.println("Created demo user.");
+        }
     }
 }
