@@ -31,6 +31,11 @@ This project is built with a modern and robust technology stack to deliver a sea
   * **Database:** `MySQL`
   * **Machine Learning:** `Python, Scikit-learn, Pandas, NumPy`
 
+### Credentials for demo purpose
+
+**Demo Admin Login:**
+- Email: admin@ecostore.com  
+- Password: user@123
 
 ## 📸 Application Showcase
 
