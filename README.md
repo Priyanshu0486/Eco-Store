@@ -31,6 +31,18 @@ This project is built with a modern and robust technology stack to deliver a sea
   * **Database:** `MySQL`
   * **Machine Learning:** `Python, Scikit-learn, Pandas, NumPy`
 
+## Demo Credentials
+
+For testing purposes, you can use the following accounts:
+
+### Regular User Account
+- Sign up through the application or for demo use the credentials below:
+- Email: `user@ecostore.com`
+- Password: `user@123`
+
+### Admin Account
+- Email: `admin@ecostore.com`
+- Password: `[contact for password]` or `[set during setup]`
 
 ## 📸 Application Showcase
 
