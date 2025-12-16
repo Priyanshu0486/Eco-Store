@@ -29,6 +29,7 @@ This project is built with a modern and robust technology stack to deliver a sea
   * **Frontend:** `React.js, Material UI`
   * **Backend:** `Spring Boot, Flask`
   * **Database:** `MySQL`
+  * **Cloud:** `AWS`
   * **Machine Learning:** `Python, Scikit-learn, Pandas, NumPy`
 
 ## Demo Credentials
