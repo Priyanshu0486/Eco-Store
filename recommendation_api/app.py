@@ -5,6 +5,11 @@ from final_model import final_model
 app = Flask(__name__)
 
 
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "healthy", "service": "recommendation-api"})
+
+
 @app.route("/recommend", methods=["POST"])
 def recommend():
 
